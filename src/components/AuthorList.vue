@@ -43,14 +43,20 @@ const authors = ref([]);
 const showForm = ref(false);
 const isEdit = ref(false);
 const selectedAuthor = ref(null);
+const user = ref(null);
 
-onMounted(() => {
-  loadAuthors();
+onMounted(async () => {
+  user.value = JSON.parse(localStorage.getItem("user"));
+  await loadAuthors();
 });
 
 async function loadAuthors() {
-  const response = await authorService.getAuthors();
-  authors.value = response.data;
+  try {
+    const response = await authorService.getAuthors();
+    authors.value = response.data;
+  } catch (error) {
+    console.error("Failed to load authors", error);
+  }
 }
 
 function openForm() {

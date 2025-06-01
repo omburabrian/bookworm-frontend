@@ -7,50 +7,68 @@
             >Book Authors</v-card-title
           >
         </v-col>
-        <v-col class="d-flex justify-end" cols="2">
-          <v-btn color="primary" class="mr-2" @click="openAdd()">Add Author</v-btn>
-          <v-btn color="red" @click="deleteSelectedAuthors" :disabled="!selectedAuthors.length">
-            Delete Selected
-          </v-btn>
+
+        <v-col cols="12" md="4" class="ml-auto">
+          <v-row dense class="justify-end">
+            <v-col cols="12" sm="6">
+              <v-btn block color="primary" class="mb-2" @click="openAdd()"
+                >Add Author</v-btn
+              >
+            </v-col>
+            <v-col cols="12" sm="6">
+              <v-btn
+                block
+                color="red"
+                @click="deleteSelectedAuthors"
+                :disabled="!selectedAuthors.length"
+              >
+                Delete
+              </v-btn>
+            </v-col>
+          </v-row>
         </v-col>
       </v-row>
 
-<div class="scrollable-list">
-      <v-list v-if="authors.length">
-        <v-list-item
-          v-for="author in authors"
-          :key="author.authorId"
-          class="mb-2"
-        >
-          <v-row align="center" class="w-100">
-            <v-col cols="auto">
-              <v-checkbox
-                v-model="selectedAuthors"
-                :value="author.authorId" 
-                hide-details
-                density="compact"
-              ></v-checkbox>
-            </v-col>
-            <v-col>
-              <v-list-item-content class="text-left">
-                <v-list-item-title class="text-h6">{{ author.name }}</v-list-item-title>
-                <v-list-item-subtitle>{{ author.description }}</v-list-item-subtitle>
-              </v-list-item-content>
-            </v-col>
-            <v-col class="ml-auto" cols="auto">
-              <v-list-item-action>
-                <v-btn icon @click="editAuthor(author)">
-                  <v-icon>mdi-pencil</v-icon>
-                </v-btn>
-                <v-btn icon @click="deleteAuthor(author.authorId)">
-                  <v-icon color="red">mdi-delete</v-icon>
-                </v-btn>
-              </v-list-item-action>
-            </v-col>
-          </v-row>
-        </v-list-item>
-      </v-list>
-</div>
+      <div class="scrollable-list">
+        <v-list v-if="authors.length">
+          <v-list-item
+            v-for="author in authors"
+            :key="author.authorId"
+            class="mb-2"
+          >
+            <v-row align="center" class="w-100" dense>
+              <v-col cols="12" sm="1">
+                <v-checkbox
+                  v-model="selectedAuthors"
+                  :value="author.authorId"
+                  hide-details
+                  density="compact"
+                ></v-checkbox>
+              </v-col>
+              <v-col cols="12" sm="9">
+                <v-list-item-content class="text-left">
+                  <v-list-item-title class="text-h6">{{
+                    author.name
+                  }}</v-list-item-title>
+                  <v-list-item-subtitle>{{
+                    author.description
+                  }}</v-list-item-subtitle>
+                </v-list-item-content>
+              </v-col>
+              <v-col cols="12" sm="2" class="d-flex justify-end">
+                <v-list-item-action>
+                  <v-btn icon @click="editAuthor(author)">
+                    <v-icon>mdi-pencil</v-icon>
+                  </v-btn>
+                  <v-btn icon @click="deleteAuthor(author.authorId)">
+                    <v-icon color="red">mdi-delete</v-icon>
+                  </v-btn>
+                </v-list-item-action>
+              </v-col>
+            </v-row>
+          </v-list-item>
+        </v-list>
+      </div>
       <!-- Author Form Dialog -->
       <v-dialog persistent v-model="isAdd" width="600">
         <v-card class="rounded-lg elevation-3">
@@ -101,8 +119,8 @@ const authors = ref([]);
 const isAdd = ref(false);
 const isEditing = ref(false);
 const selectedAuthorId = ref(null);
-const searchQuery = ref("");
 const selectedAuthors = ref([]);
+const user = ref(null);
 
 const snackbar = ref({
   value: false,
@@ -117,19 +135,30 @@ const newAuthor = ref({
 
 const API_URL = "http://localhost:3201/bookwormapi/authors";
 
-onMounted(() => {
-  loadAuthors();
+onMounted(async () => {
+  user.value = JSON.parse(localStorage.getItem("user"));
+  await loadAuthors();
 });
+
+function getAuthConfig() {
+  const token = user.value?.token;
+  return token
+    ? {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    : {};
+}
 
 async function loadAuthors() {
   try {
-    const res = await axios.get(API_URL);
+    const res = await axios.get(API_URL, getAuthConfig());
     authors.value = res.data;
   } catch (err) {
     showError(err);
   }
 }
-
 
 function openAdd() {
   isAdd.value = true;
@@ -156,10 +185,14 @@ function editAuthor(author) {
 async function submitAuthor() {
   try {
     if (isEditing.value && selectedAuthorId.value) {
-      await axios.put(`${API_URL}/${selectedAuthorId.value}`, newAuthor.value);
+      await axios.put(
+        `${API_URL}/${selectedAuthorId.value}`,
+        newAuthor.value,
+        getAuthConfig()
+      );
       showSuccess("Author updated successfully.");
     } else {
-      await axios.post(API_URL, newAuthor.value);
+      await axios.post(API_URL, newAuthor.value, getAuthConfig());
       showSuccess("Author created successfully.");
     }
     await loadAuthors();
@@ -171,7 +204,7 @@ async function submitAuthor() {
 
 async function deleteAuthor(id) {
   try {
-    await axios.delete(`${API_URL}/${id}`);
+    await axios.delete(`${API_URL}/${id}`, getAuthConfig());
     await loadAuthors();
     showSuccess("Author deleted.");
   } catch (err) {
@@ -182,7 +215,7 @@ async function deleteAuthor(id) {
 async function deleteSelectedAuthors() {
   try {
     for (const id of selectedAuthors.value) {
-      await axios.delete(`${API_URL}/${id}`);
+      await axios.delete(`${API_URL}/${id}`, getAuthConfig());
     }
     showSuccess("Selected authors deleted.");
     selectedAuthors.value = [];
@@ -211,7 +244,6 @@ function closeSnackBar() {
 
 <style scoped>
 .v-list-item {
- 
   padding: 8px;
 }
 
@@ -224,10 +256,9 @@ function closeSnackBar() {
 }
 /* Optional: add spacing for content area */
 .scrollable-list {
-  max-height: 600px; 
+  max-height: 800px;
   overflow-y: auto;
   border: 1px solid #ccc;
-  padding-right: 4px; /* space for scrollbar */
   border-radius: 4px;
 }
 
@@ -247,6 +278,6 @@ function closeSnackBar() {
 }
 
 .v-list-item-content {
-  padding-right: 16px;
+  padding-right: 6px;
 }
 </style>

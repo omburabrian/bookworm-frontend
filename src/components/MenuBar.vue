@@ -49,7 +49,10 @@ function logout() {
         Dashboard
       </v-btn>
       <v-btn v-if="user !== null" class="mx-2" :to="{ name: 'authors' }">
-        Book Authors
+        Authors
+      </v-btn>
+      <v-btn v-if="user !== null" class="mx-2" :to="{ name: 'reviews' }">
+        Reviews
       </v-btn>
       <v-btn v-if="user === null" class="mx-2" :to="{ name: 'login' }">
         Login

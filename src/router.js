@@ -28,7 +28,12 @@ const router = createRouter({
       path:"/authors",
       name: "authors",
       component: () => import("./views/AuthorPage.vue"),
-    }
+    },
+    {
+      path:"/reviews",
+      name: "reviews",
+      component: () => import("./views/ReviewList.vue"),
+    },
   ],
 });
 

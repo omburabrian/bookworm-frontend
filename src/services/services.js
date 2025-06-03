@@ -1,11 +1,17 @@
 import axios from "axios";
-
 var baseurl = "";
+
+// services.js
 if (process.env.NODE_ENV === "development") {
-  baseurl = "http://localhost/recipeapi/";
+  baseurl =baseurl = "http://localhost:3201/bookwormapi/";
+  ;
 } else {
-  baseurl = "/recipeapi/";
+  baseurl = "/";
 }
+
+
+
+console.log("API URL:", baseurl);
 
 const apiClient = axios.create({
   baseURL: baseurl,
@@ -29,11 +35,16 @@ const apiClient = axios.create({
     return JSON.stringify(data);
   },
   transformResponse: function (data) {
-    data = JSON.parse(data);
-    if (!data.success && data.code == "expired-session") {
-      localStorage.removeItem("user");
+    try {
+      data = JSON.parse(data);
+      if (!data.success && data.code == "expired-session") {
+        localStorage.removeItem("user");
+      }
+      return data;
+    } catch (e) {
+      console.error("Error parsing response:", e);
+      return data;
     }
-    return data;
   },
 });
 

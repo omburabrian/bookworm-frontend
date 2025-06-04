@@ -3,13 +3,10 @@ var baseurl = "";
 
 // services.js
 if (process.env.NODE_ENV === "development") {
-  baseurl =baseurl = "http://localhost:3201/bookwormapi/";
-  ;
+  baseurl = "http://localhost/bookwormapi/";
 } else {
-  baseurl = "/";
+  baseurl = "/bookwormapi/";
 }
-
-
 
 console.log("API URL:", baseurl);
 

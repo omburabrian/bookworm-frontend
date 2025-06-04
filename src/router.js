@@ -24,6 +24,11 @@ const router = createRouter({
       name: "ingredients",
       component: () => import("./views/IngredientList.vue"),
     },
+    {
+      path:"/authors",
+      name: "authors",
+      component: () => import("./views/AuthorPage.vue"),
+    }
   ],
 });
 

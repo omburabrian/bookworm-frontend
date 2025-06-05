@@ -15,7 +15,7 @@ export default {
   },
 
   updateBook(book) {
-    return apiClient.put("books/" + book.bookId, book); // adjust to your ID field
+    return apiClient.put("books/" + book.id, book); 
   },
 
   deleteBook(id) {

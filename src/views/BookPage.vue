@@ -81,11 +81,11 @@
               label="Title"
               required
             ></v-text-field>
-            <v-textarea
+            <v-text-field
               v-model="newBook.isbn"
               label="ISBN"
               required
-            ></v-textarea>
+            ></v-text-field>
             <v-textarea
               v-model="newBook.description"
               label="Description"

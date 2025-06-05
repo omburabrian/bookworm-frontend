@@ -97,7 +97,16 @@
                 type="date"
                 required
             ></v-text-field>
-
+            <v-select
+              v-model="selectedAuthors"
+              :items="allAuthors"
+              item-title="name"
+              item-value="authorId"
+              label="Select Authors"
+              multiple
+              chips
+              clearable
+            ></v-select>
           </v-card-text>
           <v-card-actions>
             <v-spacer></v-spacer>
@@ -133,6 +142,8 @@ const isEditing = ref(false);
 const selectedBookId = ref(null);
 const selectedBooks = ref([]);
 const user = ref(null);
+const allAuthors = ref([])
+const selectedAuthors = ref([])
 
 const snackbar = ref({
   value: false,
@@ -145,6 +156,7 @@ const newBook = ref({
   description: "",
     isbn: "",
     date: "",
+  selectedAuthors: []
 });
 
 const API_URL = "http://localhost:3201/bookwormapi/books";
@@ -152,6 +164,10 @@ const API_URL = "http://localhost:3201/bookwormapi/books";
 onMounted(async () => {
   user.value = JSON.parse(localStorage.getItem("user"));
   await loadBooks();
+  await loadAllAuthors()
+  if (selectedBookId.value) {
+    await loadBookAuthors(selectedBookId.value)
+  }
 });
 
 function getAuthConfig() {
@@ -177,12 +193,12 @@ async function loadBooks() {
 function openAdd() {
   isAdd.value = true;
   isEditing.value = false;
-  newBook.value = { title: "", description: "", isbn: "", date: "" };
+  newBook.value = { title: "", description: "", isbn: "", date: "", selectedAuthors: []};
 }
 
 function closeAdd() {
   isAdd.value = false;
-  newBook.value = { title: "", description: "", isbn: "", date: "" };
+  newBook.value = { title: "", description: "", isbn: "", date: "", selectedAuthors: []};
   selectedBookId.value = null;
 }
 
@@ -194,6 +210,7 @@ function editBook(book) {
     isbn: book.isbn,
     date:  book.date?.split("T")[0] || "",
   };
+  loadBookAuthors(selectedBookId.value);
   isEditing.value = true;
   isAdd.value = true;
 }
@@ -206,9 +223,26 @@ async function submitBook() {
         newBook.value,
         getAuthConfig()
       );
+     const bookId = selectedBookId.value
+      // Update authors for the book
+      await axios.delete(`${API_BASE}/bookAuthors/byBook/${bookId}`, getAuthConfig());
+
+      await axios.post(`${API_BASE}/bookAuthors`, {
+        bookId,
+        authorIds: selectedAuthors.value
+      });
+
       showSuccess("Book updated successfully.");
     } else {
-      await axios.post(API_URL, newBook.value, getAuthConfig());
+      const res = await axios.post(API_URL, newBook.value, getAuthConfig());
+      const bookId = res.data.id;
+
+      // Create authors for the book
+      await axios.post(`${API_BASE}/bookAuthors`, {
+        bookId,
+        authorIds: selectedAuthors.value
+      });
+
       showSuccess("Book created successfully.");
     }
     await loadBooks();
@@ -240,6 +274,31 @@ async function deleteSelectedBook() {
     showError(err);
   }
 }
+
+//Stuff for pulling authors
+
+const bookId = ref(null)
+const API_BASE = 'http://localhost:3201/bookwormapi'
+
+async function loadAllAuthors() {
+  try {
+    const res = await axios.get(`${API_BASE}/authors`)
+    allAuthors.value = res.data
+  } catch (err) {
+    console.error('Failed to load authors:', err)
+  }
+}
+
+async function loadBookAuthors(id) {
+  try {
+    const res = await axios.get(`${API_BASE}/bookAuthors/byBook/${id}`)
+    selectedAuthors.value = res.data.map(a => a.authorId) // extract just the authorIds
+  } catch (err) {
+    console.error('Failed to load book authors:', err)
+  }
+}
+
+
 
 function showError(error) {
   snackbar.value.value = true;

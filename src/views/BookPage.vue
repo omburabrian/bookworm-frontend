@@ -193,13 +193,15 @@ async function loadBooks() {
 function openAdd() {
   isAdd.value = true;
   isEditing.value = false;
-  newBook.value = { title: "", description: "", isbn: "", date: "", selectedAuthors: []};
+  newBook.value = { title: "", description: "", isbn: "", date: ""};
+  selectedAuthors.value = [];
 }
 
 function closeAdd() {
   isAdd.value = false;
-  newBook.value = { title: "", description: "", isbn: "", date: "", selectedAuthors: []};
+  newBook.value = { title: "", description: "", isbn: "", date: ""};
   selectedBookId.value = null;
+  selectedAuthors.value = [];
 }
 
 function editBook(book) {

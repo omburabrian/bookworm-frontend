@@ -25,7 +25,7 @@ const router = createRouter({
       component: () => import("./views/IngredientList.vue"),
     },
     {
-      path:"/authors",
+      path: "/authors",
       name: "authors",
       component: () => import("./views/AuthorPage.vue"),
     },
@@ -34,6 +34,16 @@ const router = createRouter({
       name: "reviews",
       component: () => import("./views/ReviewList.vue"),
     },
+    {
+      path: "/books",
+      name: "books",
+      component: () => import("./views/BookPage.vue"),
+    },
+    {
+      path: "/userbooks",
+      name: "userBooks",
+      component: () => import("./views/UserBookPage.vue"),
+    }
   ],
 });
 

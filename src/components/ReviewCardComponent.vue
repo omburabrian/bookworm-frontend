@@ -2,18 +2,15 @@
 import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 
-//  No other components needed?
-//  ToDo:   Will need references to BOOK and AUTHOR.  How is this done?
-
-//  import RecipeIngredientServices from "../services/RecipeIngredientServices.js";
-//  import RecipeStepServices from "../services/RecipeStepServices.js";
-//  import RecipeReports from "../reports/RecipeReports.js";
+//  No other components need to be imported, except maybe USER.
+//  The BOOK TITLE and AUTHOR NAME are retrieved with the REVIEW
+//  via the REVIEW SERVICE / REVIEW API.
 
 const router = useRouter();
 
 const showDetails = ref(false);
-//  const recipeIngredients = ref([]);
-//  const recipeSteps = ref([]);
+
+//  A REVIEW is associated to (written by) a USER.
 const user = ref(null);
 
 const props = defineProps({
@@ -29,6 +26,9 @@ onMounted(async () => {
   user.value = JSON.parse(localStorage.getItem("user"));
 });
 
+//  DON'T NEED TO GET BOOK OR AUTHOR INFO SINCE IT IS INCLUDED WITH REVIEW DATA?
+//  vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+/*
 //  ToDo: Needs work whenever book available.
 async function getBook() {
   await BookServices.getBookForId(props.review.bookId)
@@ -50,6 +50,8 @@ async function getAuthor() {
       console.log(error);
     });
 }
+//  */
+//  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 //  ToDo: What does this do?  No other references anywhere.  >>>> function navigateToEdit() {
 //  Documentation = navigates to url?  https://router.vuejs.org/guide/essentials/navigation.html
@@ -66,11 +68,18 @@ function navigateToEdit() {
       <v-row align="center">
 
         <v-col cols="10">
-          {{ review.rating }}
+
           <v-chip class="ma-2" color="primary" label>
-            <v-icon start icon="mdi-account-circle-outline"></v-icon>
-            {{ review.rating }} Rating
+            <!-- Show # of stars == to the rating. -->
+             ( {{ review.rating }} ) &nbsp; &nbsp;
+            <span v-for="i in parseInt(review.rating)" :key="i">
+            <v-icon start icon="mdi-star"></v-icon>  
+            </span>
           </v-chip>
+          {{ review.bw_book.title }}
+          <span style="font-weight: normal; font-size: smaller;">
+          &nbsp; &nbsp; ~ {{ review.bw_book.bw_authors[0].name }}
+          </span>
         </v-col>
 
         <!-- Edit button on right -->
@@ -82,6 +91,7 @@ function navigateToEdit() {
     </v-card-title>
 
     <v-card-text class="body-1">
+      <!-- ToDo:  Show a PREVIEW of the text with an option to open it in a dialog. -->
       {{ review.reviewText }}
     </v-card-text>
   </v-card>

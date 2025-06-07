@@ -59,6 +59,19 @@ function navigateToEdit() {
   router.push({ name: "editReview", params: { id: props.review.id } });
   //  router.push({ name: "editRecipe", params: { id: props.review.id } });
 }
+
+function reviewTextPreview(theReviewText) {
+  let textLimit = 250;
+  let textContinuationTag = '';
+
+  if (theReviewText.length > textLimit) {
+    textContinuationTag = ' . . . ';
+  }
+
+  return theReviewText.slice(0, 250) + textContinuationTag;
+}
+
+
 </script>
 
 <template>
@@ -92,7 +105,8 @@ function navigateToEdit() {
 
     <v-card-text class="body-1">
       <!-- ToDo:  Show a PREVIEW of the text with an option to open it in a dialog. -->
-      {{ review.reviewText }}
+       <!--  {{ review.reviewText }} -->
+      {{ reviewTextPreview(review.reviewText) }}
     </v-card-text>
   </v-card>
 </template>

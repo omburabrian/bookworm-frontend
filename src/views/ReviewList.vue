@@ -103,7 +103,7 @@ function closeSnackBar() {
 
                 <v-col cols="10">
                     <v-card-title class="pl-0 text-h4 font-weight-bold">
-                        Reviews
+                        Book Reviews
                     </v-card-title>
                 </v-col>
 

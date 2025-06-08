@@ -232,7 +232,7 @@ async function submitBook() {
       await axios.post(`${API_BASE}/bookAuthors`, {
         bookId,
         authorIds: selectedAuthors.value
-      });
+      },getAuthConfig());
 
       showSuccess("Book updated successfully.");
     } else {

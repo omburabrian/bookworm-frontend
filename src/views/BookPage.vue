@@ -210,7 +210,7 @@ function editBook(book) {
     title: book.title,
     description: book.description,
     isbn: book.isbn,
-    date:  book.date?.split("T")[0] || "",
+    date:  book.date,
   };
   loadBookAuthors(selectedBookId.value);
   isEditing.value = true;
@@ -243,7 +243,7 @@ async function submitBook() {
       await axios.post(`${API_BASE}/bookAuthors`, {
         bookId,
         authorIds: selectedAuthors.value
-      });
+      },getAuthConfig());
 
       showSuccess("Book created successfully.");
     }

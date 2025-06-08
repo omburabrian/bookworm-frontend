@@ -31,11 +31,7 @@
 
       <div class="scrollable-list">
         <v-list v-if="books.length">
-          <v-list-item
-            v-for="book in books"
-            :key="book.id"
-            class="mb-2"
-          >
+          <v-list-item v-for="book in books" :key="book.id" class="mb-2">
             <v-row align="center" class="w-100" dense>
               <v-col cols="12" sm="1">
                 <v-checkbox
@@ -92,10 +88,10 @@
               required
             ></v-textarea>
             <v-text-field
-                v-model="newBook.date"
-                label="Publication Date"
-                type="date"
-                required
+              v-model="newBook.date"
+              label="Publication Date"
+              type="date"
+              required
             ></v-text-field>
             <v-select
               v-model="selectedAuthors"
@@ -142,8 +138,8 @@ const isEditing = ref(false);
 const selectedBookId = ref(null);
 const selectedBooks = ref([]);
 const user = ref(null);
-const allAuthors = ref([])
-const selectedAuthors = ref([])
+const allAuthors = ref([]);
+const selectedAuthors = ref([]);
 
 const snackbar = ref({
   value: false,
@@ -154,9 +150,9 @@ const snackbar = ref({
 const newBook = ref({
   title: "",
   description: "",
-    isbn: "",
-    date: "",
-  selectedAuthors: []
+  isbn: "",
+  date: "",
+  selectedAuthors: [],
 });
 
 const API_URL = "http://localhost:3201/bookwormapi/books";
@@ -164,9 +160,9 @@ const API_URL = "http://localhost:3201/bookwormapi/books";
 onMounted(async () => {
   user.value = JSON.parse(localStorage.getItem("user"));
   await loadBooks();
-  await loadAllAuthors()
+  await loadAllAuthors();
   if (selectedBookId.value) {
-    await loadBookAuthors(selectedBookId.value)
+    await loadBookAuthors(selectedBookId.value);
   }
 });
 
@@ -193,13 +189,13 @@ async function loadBooks() {
 function openAdd() {
   isAdd.value = true;
   isEditing.value = false;
-  newBook.value = { title: "", description: "", isbn: "", date: ""};
+  newBook.value = { title: "", description: "", isbn: "", date: "" };
   selectedAuthors.value = [];
 }
 
 function closeAdd() {
   isAdd.value = false;
-  newBook.value = { title: "", description: "", isbn: "", date: ""};
+  newBook.value = { title: "", description: "", isbn: "", date: "" };
   selectedBookId.value = null;
   selectedAuthors.value = [];
 }
@@ -210,7 +206,7 @@ function editBook(book) {
     title: book.title,
     description: book.description,
     isbn: book.isbn,
-    date:  book.date?.split("T")[0] || "",
+    date: book.date?.split("T")[0] || "",
   };
   loadBookAuthors(selectedBookId.value);
   isEditing.value = true;
@@ -225,14 +221,21 @@ async function submitBook() {
         newBook.value,
         getAuthConfig()
       );
-     const bookId = selectedBookId.value
+      const bookId = selectedBookId.value;
       // Update authors for the book
-      await axios.delete(`${API_BASE}/bookAuthors/byBook/${bookId}`, getAuthConfig());
+      await axios.delete(
+        `${API_BASE}/bookAuthors/byBook/${bookId}`,
+        getAuthConfig()
+      );
 
-      await axios.post(`${API_BASE}/bookAuthors`, {
-        bookId,
-        authorIds: selectedAuthors.value
-      });
+      await axios.post(
+        `${API_BASE}/bookAuthors`,
+        {
+          bookId,
+          authorIds: selectedAuthors.value,
+        },
+        getAuthConfig()
+      );
 
       showSuccess("Book updated successfully.");
     } else {
@@ -240,10 +243,14 @@ async function submitBook() {
       const bookId = res.data.id;
 
       // Create authors for the book
-      await axios.post(`${API_BASE}/bookAuthors`, {
-        bookId,
-        authorIds: selectedAuthors.value
-      });
+      await axios.post(
+        `${API_BASE}/bookAuthors`,
+        {
+          bookId,
+          authorIds: selectedAuthors.value,
+        },
+        getAuthConfig()
+      );
 
       showSuccess("Book created successfully.");
     }
@@ -279,28 +286,26 @@ async function deleteSelectedBook() {
 
 //Stuff for pulling authors
 
-const bookId = ref(null)
-const API_BASE = 'http://localhost:3201/bookwormapi'
+const bookId = ref(null);
+const API_BASE = "http://localhost:3201/bookwormapi";
 
 async function loadAllAuthors() {
   try {
-    const res = await axios.get(`${API_BASE}/authors`)
-    allAuthors.value = res.data
+    const res = await axios.get(`${API_BASE}/authors`);
+    allAuthors.value = res.data;
   } catch (err) {
-    console.error('Failed to load authors:', err)
+    console.error("Failed to load authors:", err);
   }
 }
 
 async function loadBookAuthors(id) {
   try {
-    const res = await axios.get(`${API_BASE}/bookAuthors/byBook/${id}`)
-    selectedAuthors.value = res.data.map(a => a.authorId) // extract just the authorIds
+    const res = await axios.get(`${API_BASE}/bookAuthors/byBook/${id}`);
+    selectedAuthors.value = res.data.map((a) => a.authorId); // extract just the authorIds
   } catch (err) {
-    console.error('Failed to load book authors:', err)
+    console.error("Failed to load book authors:", err);
   }
 }
-
-
 
 function showError(error) {
   snackbar.value.value = true;

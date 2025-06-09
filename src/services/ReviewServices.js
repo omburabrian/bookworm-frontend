@@ -27,14 +27,29 @@ export default {
     return apiClient.post("reviews", review);
   },
 
+  //  Update review with user ID, book ID
+  updateReviewForUserIdBookId(userId, bookId, review) {
+    return apiClient.put(
+      "reviews/users/" + userId + "/books/" + bookId,
+      review
+    );
+  },
+
+  //  ToDo:  Remove this.  This bridge table requires both, user ID and book ID.
   //  Update the review with id
   updateReview(reviewId, review) {
     return apiClient.put("reviews/" + reviewId, review);
   },
 
+  //  ToDo:  Remove this.  This bridge table requires both, user ID and book ID.
   //  Delete review with id
   deleteReview(reviewId) {
     return apiClient.delete("reviews/" + reviewId);
+  },
+
+  //  Delete review with user ID, book ID
+  deleteReviewForUserIdBookId(userId, bookId) {
+    return apiClient.delete("reviews/users/" + userId + "/books/" + bookId);
   },
 
   //  Delete ALL reviews

@@ -62,7 +62,7 @@ async function getAuthor() {
 //  Documentation = navigates to url?  https://router.vuejs.org/guide/essentials/navigation.html
 function navigateToEdit() {
   //  "editReview" = named route in "src\router.js", associated with the EditReview.vue.
-  console.log(`router.push(userId=${props.review.userId}, bwBookId=${props.review.bwBookId})`);
+  //  console.log(`router.push(userId=${props.review.userId}, bwBookId=${props.review.bwBookId})`);
   router.push({
     name: "editReview",
     //  Bridge table.  Will need the 2 IDs of the joined tables.

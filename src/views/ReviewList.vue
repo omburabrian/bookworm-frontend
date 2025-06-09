@@ -116,27 +116,18 @@ function closeSnackBar() {
             </v-row>
 
             <!-- ToDo:  What is the @deletedList clause? -->
-            <ReviewCard
-                v-for="review in reviews"
-                :key="review.id"
-                :review="review"
-                @deletedList="getLists()"
-            />
+            <ReviewCard v-for="review in reviews" :key="review.id" :review="review" @deletedList="getLists()" />
 
             <v-dialog persistent v-model="isAdd" width="800">
                 <v-card class="rounded-lg elevation-5">
                     <v-card-title class="headline mb-2">Add Review </v-card-title>
 
                     <!-- Change this to some type of selection, integer between 1-5 -->
-                    <!-- Is this the header for the card? -->
-                    <v-text-field
-                        v-model="newReview.rating"
-                        label="Rating"
-                        required
-                    ></v-text-field>
+                    <v-text-field v-model="newReview.rating" label="Rating" required></v-text-field>
 
                     <v-card-text>
-                        <v-textarea v-model="newReview.reviewText" label="Review"></v-textarea>
+                        <v-textarea v-model="newReview.reviewText" label="Review">
+                        </v-textarea>
                     </v-card-text>
 
                     <v-card-actions>

@@ -1,7 +1,9 @@
 <script setup>
+
 import { onMounted } from "vue";
 import { ref } from "vue";
 
+//  Book Review elements
 import ReviewCard from "../components/ReviewCardComponent.vue";
 import ReviewServices from "../services/ReviewServices.js";
 
@@ -23,6 +25,7 @@ const newReview = ref({
     reviewText: "",
 });
 
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 //  Upon loading the view, load all the reviews.
 onMounted(async () => {
     await getReviews();
@@ -30,11 +33,12 @@ onMounted(async () => {
     user.value = JSON.parse(localStorage.getItem("user"));
 });
 
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 //  Get reviews.  (?) If user logged in, only get theirs.  If not, get all.
 async function getReviews() {
     user.value = JSON.parse(localStorage.getItem("user"));
     if (user.value !== null && user.value.id !== null) {
-        //  userId not available yet.  Just get the whole list.
+        //  ToDo:   Default = get all reviews, but perhaps have checkbox to get own reviews?
         //  ToDo:   await ReviewServices.getReviewsByUserId(user.value.id)
         await ReviewServices.getReviews()
             .then((response) => {
@@ -60,17 +64,23 @@ async function getReviews() {
     }
 }
 
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 //  Create a Review
 async function addReview() {
-    //  Is this the correct value?  What is isAdd used for?
+
+    //  Review has been input by user.  Close the "add review" dialog. (set to false).
     isAdd.value = false;
-    //  ToDo:   newReview.value.userId = user.value.id;
-    //  newReview.value.userId = user.value.id;
+
+    //  Save the current user's ID to the added review.
+    newReview.value.userId = user.value.id;
+
+    //  Employ the Review service to add the review.
     await ReviewServices.addReview(newReview.value)
         .then(() => {
             snackbar.value.value = true;
             snackbar.value.color = "green";
-            snackbar.value.text = `${newReview.value.name} added successfully!`;
+            //  ToDo:  Use the book name in this notification.  TEST
+            snackbar.value.text = `Review added successfully!  (${newReview.value.bw_book.title})`;
         })
         .catch((error) => {
             console.log(error);
@@ -116,7 +126,12 @@ function closeSnackBar() {
             </v-row>
 
             <!-- ToDo:  What is the @deletedList clause? -->
-            <ReviewCard v-for="review in reviews" :key="review.id" :review="review" @deletedList="getLists()" />
+            <ReviewCard
+                v-for="review in reviews"
+                :key="review.id"
+                :review="review"
+                @deletedList="getLists()"
+            />
 
             <v-dialog persistent v-model="isAdd" width="800">
                 <v-card class="rounded-lg elevation-5">

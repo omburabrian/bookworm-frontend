@@ -1,4 +1,5 @@
 <script setup>
+
 import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 
@@ -8,18 +9,20 @@ import { useRouter } from "vue-router";
 
 const router = useRouter();
 
+//  Whether to expand the book review CARD or not.
 const showDetails = ref(false);
 
 //  A REVIEW is associated to (written by) a USER.
 const user = ref(null);
 
+//  ToDo:  Define . . . properties?  For this view?  Like a global?
 const props = defineProps({
   review: {
     required: true,
   },
 });
 
-//  Get the current user whenever view loads.
+//  When the view loads, get the current user.
 onMounted(async () => {
   //  await getRecipeIngredients();
   //  await getRecipeSteps();
@@ -29,7 +32,7 @@ onMounted(async () => {
 //  DON'T NEED TO GET BOOK OR AUTHOR INFO SINCE IT IS INCLUDED WITH REVIEW DATA?
 //  vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 /*
-//  ToDo: Needs work whenever book available.
+
 async function getBook() {
   await BookServices.getBookForId(props.review.bookId)
     .then((response) => {
@@ -40,7 +43,6 @@ async function getBook() {
     });
 }
 
-//  ToDo: Needs work whenever authorId available.
 async function getAuthor() {
   await AuthorServices.getAuthor(props.review.authorId)
     .then((response) => {
@@ -50,12 +52,14 @@ async function getAuthor() {
       console.log(error);
     });
 }
+
 //  */
 //  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 //  ToDo: What does this do?  No other references anywhere.  >>>> function navigateToEdit() {
 //  Documentation = navigates to url?  https://router.vuejs.org/guide/essentials/navigation.html
 function navigateToEdit() {
+  //  "editReview" = named route in "src\router.js", associated with the EditReview.vue.
   router.push({ name: "editReview", params: { id: props.review.id } });
   //  router.push({ name: "editRecipe", params: { id: props.review.id } });
 }
@@ -65,17 +69,20 @@ function reviewTextPreview(theReviewText) {
   let textContinuationTag = '';
 
   if (theReviewText.length > textLimit) {
+    //  ToDo:  Make this elipsis *BOLD*.
     textContinuationTag = ' . . . ';
   }
 
   return theReviewText.slice(0, 250) + textContinuationTag;
 }
 
-
 </script>
 
+<!-- -------------------------------------------------------- -->
 <template>
-  <v-card class="rounded-lg elevation-5 mb-8" @click="showDetails = !showDetails">
+  <v-card
+  class="rounded-lg elevation-5 mb-8"
+  @click="showDetails = !showDetails">
 
     <v-card-title class="headline">
       <v-row align="center">
@@ -97,16 +104,31 @@ function reviewTextPreview(theReviewText) {
 
         <!-- Edit button on right -->
         <v-col class="d-flex justify-end">
+          <!-- ToDo:  Only allow edit if review is owned by current user. -->
           <v-icon v-if="user !== null" size="small" icon="mdi-pencil" @click="navigateToEdit()"></v-icon>
         </v-col>
 
       </v-row>
     </v-card-title>
 
-    <v-card-text class="body-1">
-      <!-- ToDo:  Show a PREVIEW of the text with an option to open it in a dialog. -->
-       <!--  {{ review.reviewText }} -->
+    <!-- ToDo:  Include the user's name who wrote the review? ----------- -->
+
+    <v-card-text class="body-1" v-show="!showDetails">
       {{ reviewTextPreview(review.reviewText) }}
     </v-card-text>
+
+    <!-- Expanded section ------------------------------- -->
+
+    <v-expand-transition>
+      <v-card-text class="pt-0" v-show="showDetails">
+        <h3>Book Review: </h3>
+
+        {{ review.reviewText }}
+
+      </v-card-text>
+    </v-expand-transition>
+
+    <!-- ------------------------------------------------------ -->
+
   </v-card>
 </template>

@@ -7,7 +7,18 @@ import ReviewServices from "../services/ReviewServices.js";
 
 const route = useRoute();
 
+//  ref = reactive mutable ref object {} with one property, "value".
 const review = ref({});
+
+//  Even though loading review in onMounted(), try initializing to blank value.
+review.value = {
+    rating: 1,
+    reviewText: '(default text for reviewText)',
+    bw_book: {
+      title: '(default text for book title)',
+      bw_authors: [{ name: '(default text for author name)' }],
+    },
+  };
 
 //  User message at bottom of view
 const snackbar = ref({
@@ -22,13 +33,23 @@ onMounted(async () => {
 });
 
 async function getReview() {
-  await ReviewServices.getReview(route.params.id)
+  //  await ReviewServices.getReview(route.params.id)
+  //  console.log('params: userId = ' + route.params.userId + ', bwBookId = ' + route.params.bwBookId);
+  //  ToDo:  ERROR - Not getting the review from the backend:
+  await ReviewServices.getReviewForUserBook(route.params.userId, route.params.bwBookId)
     .then((response) => {
+      console.log('Inside .then((response) => {...}');
+      console.log(response.data);
       review.value = response.data[0];
+      //  console.log(review.value);
+      //  console.log(review);
     })
     .catch((error) => {
+      console.log('DID NOT GET THE REVIEW!!!!!');
       console.log(error);
     });
+
+    //  console.log('AFTER the await ReviewServices.getReviewForUserBook()...');
 }
 
 async function updateReview() {
@@ -44,11 +65,12 @@ async function updateReview() {
       snackbar.value.color = "error";
       snackbar.value.text = error.response.data.message;
     });
-  await getRecipe();
+  await getReview();
 }
 
+//  ToDo:   Change this to use review.value? etc.
 async function deleteReview(review) {
-  await ReviewServices.deleteReveiw(review)
+  await ReviewServices.deleteReview(review.id)
     .then(() => {
       snackbar.value.value = true;
       snackbar.value.color = "green";
@@ -60,12 +82,14 @@ async function deleteReview(review) {
       snackbar.value.color = "error";
       snackbar.value.text = error.response.data.message;
     });
-  await getRecipeIngredients();
+    //  ToDo:  Need to go back to review list screen with refreshed list.
+  await getReviews();
 }
 
 function closeSnackBar() {
   snackbar.value.value = false;
 }
+
 </script>
 
 <!-- --------------------------------------------------------- -->
@@ -109,7 +133,7 @@ function closeSnackBar() {
 
               <v-col>
                 <v-textarea
-                  v-model="revew.reviewText"
+                  v-model="review.reviewText"
                   rows="10"
                   label="Review Text"
                 ></v-textarea>
@@ -119,6 +143,12 @@ function closeSnackBar() {
           </v-card-text>
 
           <v-card-actions class="pt-0">
+
+            <!-- ToDo:  Add a DELETE button to delete the review.
+                        Link to 
+            
+            -->
+
             <v-btn variant="flat" color="primary" @click="updateReview()"
               >Update Review</v-btn>
             <v-spacer></v-spacer>

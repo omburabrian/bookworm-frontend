@@ -35,7 +35,7 @@ const router = createRouter({
       component: () => import("./views/ReviewList.vue"),
     },
     {
-      path:"/reviews/:id",
+      path:"/reviews/users/:userId/books/:bwBookId",
       name: "editReview",
       component: () => import("./views/EditReview.vue"),
     },

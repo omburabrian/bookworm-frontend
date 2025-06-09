@@ -128,7 +128,6 @@ function closeSnackBar() {
             <!-- ToDo:  What is the @deletedList clause? -->
             <ReviewCard
                 v-for="review in reviews"
-                :key="review.id"
                 :review="review"
                 @deletedList="getLists()"
             />

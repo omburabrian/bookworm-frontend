@@ -12,6 +12,11 @@ export default {
     return apiClient.get("reviews/" + id);
   },
 
+  //  Get the review with id
+  getReviewForUserBook(userId, bwBookId) {
+    return apiClient.get("reviews/users/" + userId + '/books/' + bwBookId);
+  },
+
   //  Get all reviews with user id
   getReviewsByUserId(userId) {
     return apiClient.get("reviews/user/" + userId);
@@ -33,7 +38,7 @@ export default {
   },
 
   //  Delete ALL reviews
-  deleteReview(reviewId) {
+  deleteAllReviews() {
     return apiClient.delete("reviews");
   },
 

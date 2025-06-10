@@ -7,7 +7,7 @@
       item-title="name"
       item-value="id"
       label="Select Category"
-      @update:modelValue="loadTagsByCategory"
+      @update:modelValue="loadTags(selectedTagTypeId)"
       clearable
     ></v-select>
   </v-col>
@@ -261,7 +261,7 @@ async function deleteSelectedCategory() {
     showSuccess("Category deleted.");
     selectedTagTypeId.value = null;
     await loadTagTypes();
-    await loadTags();
+    await loadTags( selectedTagTypeId.value);
   } catch (err) {
     showError(err);
   }
@@ -270,7 +270,7 @@ async function deleteSelectedCategory() {
 function editTag(tag) {
   selectedTagId.value = tag.id;
   newTag.value = {
-    title: tag.name,
+    name: tag.name,
   };
   isEditing.value = true;
   isAdd.value = true;
@@ -281,17 +281,17 @@ async function submitTag() {
     if (isEditing.value && selectedTagId.value) {
       await axios.put(
         `${API_URL}/${selectedTagId.value}`,
-        newTag.value,
+        { ...newTag.value, tagTypeId: selectedTagTypeId.value },
         getAuthConfig()
       );
      const tagId = selectedTagId.value
 
       showSuccess("Tag updated successfully.");
     } else {
-      const res = await axios.post(API_URL, newTag.value, getAuthConfig());
-      showSuccess("Book created successfully.");
+      const res = await axios.post(API_URL, { ...newTag.value, tagTypeId: selectedTagTypeId.value }, getAuthConfig());
+      showSuccess("Tag created successfully.");
     }
-    await loadBooks();
+    await loadTags(selectedTagTypeId.value);
     closeAdd();
   } catch (err) {
     showError(err);
@@ -301,7 +301,7 @@ async function submitTag() {
 async function deleteTag(id) {
   try {
     await axios.delete(`${API_URL}/${id}`, getAuthConfig());
-    await loadTags();
+    await loadTags( selectedTagTypeId.value);
     showSuccess("Tag deleted.");
   } catch (err) {
     showError(err);
@@ -315,7 +315,7 @@ async function deleteSelectedTag() {
     }
     showSuccess("Selected tags deleted.");
     selectedTags.value = [];
-    await loadTags();
+    await loadTags( selectedTagTypeId.value);
   } catch (err) {
     showError(err);
   }

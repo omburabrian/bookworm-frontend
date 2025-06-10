@@ -6,11 +6,16 @@ import { ref } from "vue";
 //  Book Review elements
 import ReviewCard from "../components/ReviewCardComponent.vue";
 import ReviewServices from "../services/ReviewServices.js";
+import BookServices from "../services/BookServices.js";
+
+//  The Book Selection Dialog.  Pass the book list to it.
+import BookSelectList from "../components/BookSelectList.vue";
 
 //  Initialize variables
 const reviews = ref([]);
 const isAdd = ref(false);
 const user = ref(null);
+const books = ref([]);
 
 //  Quick user messages using Vuetify "snackbar"
 const snackbar = ref({
@@ -21,14 +26,17 @@ const snackbar = ref({
 
 //  Blank Review object (see model, bookwormapi:review.model.js)
 const newReview = ref({
-    rating: "",
+    rating: 0,
     reviewText: "",
+    userId: null,
+    bwBookId: null,
 });
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 //  Upon loading the view, load all the reviews.
 onMounted(async () => {
     await getReviews();
+    await getBooks();
     //  Get user id for potential subsequent use in adding new reviews, etc.
     user.value = JSON.parse(localStorage.getItem("user"));
 });
@@ -64,15 +72,28 @@ async function getReviews() {
     }
 }
 
+async function getBooks() {
+    await BookServices.getBooks()
+        .then((response) => {
+            books.value = response.data;
+        })
+        .catch((error) => {
+            console.log(error);
+            snackbar.value.value = true;
+            snackbar.value.color = "error";
+            snackbar.value.text = error.response.data.message;
+        });
+}
+
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 //  Create a Review
 async function addReview() {
 
-    //  Review has been input by user.  Close the "add review" dialog. (set to false).
-    isAdd.value = false;
-
     //  Save the current user's ID to the added review.
     newReview.value.userId = user.value.id;
+
+    //  ToDo:   Ensure the book ID has been set in the newReview.value.bookId.
+    //  @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@###############################
 
     //  Employ the Review service to add the review.
     await ReviewServices.addReview(newReview.value)
@@ -88,7 +109,11 @@ async function addReview() {
             snackbar.value.color = "error";
             snackbar.value.text = error.response.data.message;
         });
-    //  Reload the list after adding a new item.
+
+    //  Review has been input by user.  Close the "add review" dialog. (set to false).
+    isAdd.value = false;
+
+    //  Reload the list of reviews after adding a new one.
     await getReviews();
 }
 
@@ -126,28 +151,38 @@ function closeSnackBar() {
             </v-row>
 
             <!-- ToDo:  What is the @deletedList clause? -->
-            <ReviewCard
-                v-for="review in reviews"
-                :review="review"
-                @deletedList="getLists()"
-            />
+            <ReviewCard v-for="review in reviews" :review="review" @deletedList="getLists()" />
 
             <v-dialog persistent v-model="isAdd" width="800">
                 <v-card class="rounded-lg elevation-5">
                     <v-card-title class="headline mb-2">Add Review </v-card-title>
 
+                    <!-- @@@@@@@@@@@@@@@@@@@@@@@############################# -->
+                    <!-- ToDo:  Select a book for which to write a review. -->
+                     <!-- ToDo:  Pass data to this imported dialog:  the book list. -->
+                    <BookSelectList
+                    />
+
+                    <!-- @@@@@@@@@@@@@@@@@@@@@@@############################# -->
+
+
                     <!-- Change this to some type of selection, integer between 1-5 -->
-                    <v-text-field v-model="newReview.rating" label="Rating" required></v-text-field>
 
                     <v-card-text>
-                        <v-textarea v-model="newReview.reviewText" label="Review">
+
+                        <v-col cols="2">
+                            <v-select v-model="newReview.rating" :items="['1', '2', '3', '4', '5']" label="Rating"
+                                required></v-select>
+                        </v-col>
+
+                        <v-textarea v-model="newReview.reviewText" label="Review" required>
                         </v-textarea>
                     </v-card-text>
 
                     <v-card-actions>
                         <v-spacer></v-spacer>
-                        <v-btn variant="flat" color="secondary" @click="closeAdd()">Close</v-btn>
                         <v-btn variant="flat" color="primary" @click="addReview()">Add Review</v-btn>
+                        <v-btn variant="flat" color="secondary" @click="closeAdd()">Close</v-btn>
                     </v-card-actions>
 
                 </v-card>

@@ -10,6 +10,10 @@ export default {
     return apiClient.get("books/" + id);
   },
 
+  findBookByTitle(title) {
+    return apiClient.get(`books?title=${title}`)
+  },
+
   addBook(book) {
     return apiClient.post("books", book);
   },

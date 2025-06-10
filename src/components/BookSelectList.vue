@@ -1,0 +1,55 @@
+<template>
+    <div class="pa-4 text-center">
+        <v-dialog max-width="600">
+            <template v-slot:activator="{ props: activatorProps }">
+                <v-btn
+                class="text-none font-weight-regular"
+                prepend-icon="mdi-book-open-variant"
+                text="Select Book"
+                variant="tonal" v-bind="activatorProps">
+            </v-btn>
+            </template>
+
+            <v-card prepend-icon="mdi-book-open-variant" title="Select Book">
+
+                <v-card-text>
+                    <v-row dense>
+                        <v-col >
+                            <v-autocomplete
+                            v-model="selectedBook"
+                                :items="['Skiing', 'Ice hockey', 'Soccer', 'Basketball', 'Hockey', 'Reading', 'Writing', 'Coding', 'Basejump']"
+                                label="Book Title" auto-select-first>
+                            </v-autocomplete>
+                        </v-col>
+                    </v-row>
+                </v-card-text>
+
+
+                <v-card-text>
+                    { { customDataFromParent } }
+                </v-card-text>
+                <v-card-text>
+                    { { moreDataFromParent } }
+                </v-card-text>
+
+
+
+
+                <v-divider></v-divider>
+
+                <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn text="Close" variant="plain" @click="close"></v-btn>
+                    <v-btn color="primary" text="Save" variant="tonal" @click="close"></v-btn>
+                </v-card-actions>
+                
+            </v-card>
+        </v-dialog>
+    </div>
+</template>
+
+<script setup>
+import { shallowRef, } from 'vue'
+const bookSelectionDialog = shallowRef(false)
+
+</script>

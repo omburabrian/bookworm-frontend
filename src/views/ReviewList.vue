@@ -123,6 +123,7 @@ async function addReview() {
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const handleBookSelectListClose = (returnedData) => {
   console.log('Data from child BookSelectList dialog:', returnedData)
+  selectedBook.value = returnedData.selectedBook;
   // Use it however needed
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -191,10 +192,9 @@ function closeSnackBar() {
                                 required></v-select>
                         </v-col>
 
-                        <v-col cols="4">
-                            <v-card-text>
-                                "selectedBook.title"
-                                {{ selectedBook.title }}
+                        <v-col cols="20">
+                            <v-card-text class="text-h6">
+                                <span class="text-body-1">Title:</span> &nbsp; {{ selectedBook }}
                             </v-card-text>
                         </v-col>
 

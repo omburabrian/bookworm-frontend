@@ -10,10 +10,6 @@ export default {
     return apiClient.get("books/" + id);
   },
 
-  findBookByTitle(title) {
-    return apiClient.get(`books?title=${title}`)
-  },
-
   addBook(book) {
     return apiClient.post("books", book);
   },
@@ -24,5 +20,9 @@ export default {
 
   deleteBook(id) {
     return apiClient.delete("books/" + id);
+  },
+
+  getAllBooks() {
+    return apiClient.get("bwbooks");
   }
 };

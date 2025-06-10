@@ -15,7 +15,7 @@ import BookSelectList from "../components/BookSelectList.vue";
 const reviews = ref([]);
 const isAdd = ref(false);
 const user = ref(null);
-const books = ref([]);
+const bookList = ref(['book one', 'book 2', 'book 3', 'book four']);
 
 //  Quick user messages using Vuetify "snackbar"
 const snackbar = ref({
@@ -73,9 +73,9 @@ async function getReviews() {
 }
 
 async function getBooks() {
-    await BookServices.getBooks()
+    await BookServices.getAllBooks()
         .then((response) => {
-            books.value = response.data;
+            bookList.value = response.data;
         })
         .catch((error) => {
             console.log(error);
@@ -161,7 +161,7 @@ function closeSnackBar() {
                     <!-- ToDo:  Select a book for which to write a review. -->
                      <!-- ToDo:  Pass data to this imported dialog:  the book list. -->
                     <BookSelectList
-                        :bookList = "['book one', 'book 2', 'book 3']"
+                        :bookList = "bookList"
                         :selectedBook = null
                         customDataFromParent = "You get this first..."
                         moreDataFromParent = "... and then this."

@@ -15,7 +15,10 @@ import BookSelectList from "../components/BookSelectList.vue";
 const reviews = ref([]);
 const isAdd = ref(false);
 const user = ref(null);
-const bookList = ref(['book one', 'book 2', 'book 3', 'book four']);
+
+//  Props shared with child dialog, BookSelectList
+const bookList = ref([]);
+const selectedBook = ref({});
 
 //  Quick user messages using Vuetify "snackbar"
 const snackbar = ref({
@@ -117,6 +120,13 @@ async function addReview() {
     await getReviews();
 }
 
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const handleBookSelectListClose = (returnedData) => {
+  console.log('Data from child BookSelectList dialog:', returnedData)
+  // Use it however needed
+}
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
 //  ADD BUTTON -- open = show, close = hide
 function openAdd() {
     isAdd.value = true;
@@ -129,6 +139,7 @@ function closeAdd() {
 function closeSnackBar() {
     snackbar.value.value = false;
 }
+
 </script>
 
 <template>
@@ -159,13 +170,14 @@ function closeSnackBar() {
 
                     <!-- @@@@@@@@@@@@@@@@@@@@@@@############################# -->
                     <!-- ToDo:  Select a book for which to write a review. -->
-                     <!-- ToDo:  Pass data to this imported dialog:  the book list. -->
+                    <!-- ToDo:  Pass data to this imported dialog:  the book list. -->
                     <BookSelectList
-                        :bookList = "bookList"
-                        :selectedBook = null
-                        customDataFromParent = "You get this first..."
-                        moreDataFromParent = "... and then this."
-                    />
+                        :bookList="bookList"
+                        :selectedBook
+                        customDataFromParent="You get this first..."
+                        moreDataFromParent="... and then this."
+                        @closeWithData="handleBookSelectListClose"
+                        />
 
                     <!-- @@@@@@@@@@@@@@@@@@@@@@@############################# -->
 
@@ -177,6 +189,13 @@ function closeSnackBar() {
                         <v-col cols="2">
                             <v-select v-model="newReview.rating" :items="['1', '2', '3', '4', '5']" label="Rating"
                                 required></v-select>
+                        </v-col>
+
+                        <v-col cols="4">
+                            <v-card-text>
+                                "selectedBook.title"
+                                {{ selectedBook.title }}
+                            </v-card-text>
                         </v-col>
 
                         <v-textarea v-model="newReview.reviewText" label="Review" required>

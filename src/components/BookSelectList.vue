@@ -51,10 +51,9 @@ import { shallowRef, ref } from 'vue'
 defineProps({
   //    modelValue: Boolean, // for v-model binding
   bookList: Array,
-  selectedBook: null,
+  selectedBook: Object,
   customDataFromParent: String,
   moreDataFromParent: String,
-  bookList: Array,
 });
 
 const bookSelectionDialog = shallowRef(false)
@@ -63,11 +62,30 @@ const selectedBook = ref(null)
 function close() {
     //  Close this dialog.  It is defined as "BookSelectList" in the parent.
     //  ToDo:  How close it without referencing the parent defined name?
+    //  selectedBook.value = ????????
     bookSelectionDialog.value = false;
-    console.log(selectedBook.value);
+    console.log(selectedBook.value);    //  Currently this is just the title.
+    //  ToDo:   Need to preserve the entire book object when selecting.  Need the book ID.
+    //  console.log(selectedBook.value.title);
+    //  console.log(selectedBook.value);
     alert('selected book = ' + selectedBook.value);
+    sendDataToParent();
 }
 
+console.log('selectedBook' + selectedBook);
+console.log('selectedBook.value' + selectedBook.value);
+
+// Define the emit event
+const emit = defineEmits(['closeWithData'])
+
+const sendDataToParent = () => {
+  const data = {
+    name: 'John Doe',
+    age: 30,
+    selectedBook: selectedBook,
+  }
+  emit('closeWithData', data)
+}
 
 </script>
 

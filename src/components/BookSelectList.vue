@@ -1,6 +1,6 @@
 <template>
     <div class="pa-4 text-center">
-        <v-dialog max-width="600">
+        <v-dialog v-model="bookSelectionDialog" max-width="600">
             <template v-slot:activator="{ props: activatorProps }">
                 <v-btn
                 class="text-none font-weight-regular"
@@ -16,24 +16,20 @@
                     <v-row dense>
                         <v-col >
                             <v-autocomplete
-                            v-model="selectedBook"
-                                :items="['Skiing', 'Ice hockey', 'Soccer', 'Basketball', 'Hockey', 'Reading', 'Writing', 'Coding', 'Basejump']"
+                                v-model="selectedBook"
+                                :items="bookList"
                                 label="Book Title" auto-select-first>
                             </v-autocomplete>
                         </v-col>
                     </v-row>
                 </v-card-text>
 
-
                 <v-card-text>
-                    { { customDataFromParent } }
+                    {{ customDataFromParent }}
                 </v-card-text>
                 <v-card-text>
-                    { { moreDataFromParent } }
+                    {{ moreDataFromParent }}
                 </v-card-text>
-
-
-
 
                 <v-divider></v-divider>
 
@@ -49,7 +45,32 @@
 </template>
 
 <script setup>
-import { shallowRef, } from 'vue'
+
+import { shallowRef, ref } from 'vue'
+
+defineProps({
+  //    modelValue: Boolean, // for v-model binding
+  bookList: Array,
+  selectedBook: null,
+  customDataFromParent: String,
+  moreDataFromParent: String,
+  bookList: Array,
+});
+
 const bookSelectionDialog = shallowRef(false)
+const selectedBook = ref(null)
+
+function close() {
+    //  Close this dialog.  It is defined as "BookSelectList" in the parent.
+    //  ToDo:  How close it without referencing the parent defined name?
+    bookSelectionDialog.value = false;
+    console.log(selectedBook.value);
+    alert('selected book = ' + selectedBook.value);
+}
+
 
 </script>
+
+
+
+

@@ -161,6 +161,10 @@ function closeSnackBar() {
                     <!-- ToDo:  Select a book for which to write a review. -->
                      <!-- ToDo:  Pass data to this imported dialog:  the book list. -->
                     <BookSelectList
+                        :bookList = "['book one', 'book 2', 'book 3']"
+                        :selectedBook = null
+                        customDataFromParent = "You get this first..."
+                        moreDataFromParent = "... and then this."
                     />
 
                     <!-- @@@@@@@@@@@@@@@@@@@@@@@############################# -->

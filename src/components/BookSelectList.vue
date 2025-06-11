@@ -21,7 +21,8 @@
                                 item-title="title"
                                 item-value="id"
                                 return-object
-                                label="Book Title" auto-select-first>
+                                label="Book Title"
+                                auto-select-first>
                             </v-autocomplete>
                         </v-col>
                     </v-row>
@@ -56,25 +57,33 @@ import { shallowRef, ref } from 'vue'
 defineProps({
   //    modelValue: Boolean, // for v-model binding
   bookList: Array,
-  selectedBook: Object,
   customDataFromParent: String,
   moreDataFromParent: String,
 });
 
+//  This dialog, defined by template, above.
 const bookSelectionDialog = shallowRef(false)
 
 //  Set default blank values for selectedBook.
+//  TODO:  Do this in onMounted()?
+//  Selected book in bookList is getting cleared.
+//  Disassociate the model and the intialization of the controls.
+/*
 const selectedBook = ref({
     id: null,
     title: ""
 })
+//  */
+const selectedBook = ref();
 
 function close() {
-    //  Close this dialog.  It is defined as "BookSelectList" in the parent.
-    //  ToDo:  How close it without referencing the parent defined name?
-    //  selectedBook.value = ????????
-    bookSelectionDialog.value = false;
-    console.log('close() : selectedBook.value = ' + selectedBook.value);
+    bookSelectionDialog.value = false;  //  Close this dialog.
+    /*
+    console.log('close() : selectedBook.value: id - title = '
+        + selectedBook.value.id
+        + ' - '
+        + selectedBook.value.title);
+    //  */
     sendDataToParent();
 }
 
@@ -83,17 +92,17 @@ const emit = defineEmits(['closeWithData'])
 
 const sendDataToParent = () => {
 
-    console.log('sendDataToParent callback()');
-    console.log('selectedBookId' + selectedBook.value);
+    //  console.log('sendDataToParent callback() : selectedBook.value = ' + selectedBook.value);
 
     const data = {
         //  name: 'John Doe',
         //  age: 30,
         selectedBookId: selectedBook.value.id,
         selectedBookTitle: selectedBook.value.title,
+        //  TODO:  THIS IS OK.  JUST DON'T CHANGE IT IN THE PARENT?
+        //  Don't return this.  May be the actual object and mess up the bookList.
+        //  Don't need it anyway.
         selectedBook: selectedBook.value
-        //  ToDo:  How get object at selected INDEX, not ID?
-        //  selectedBookFromBookList: bookList[selectedBook INDEX in bookList]
     }
 
     emit('closeWithData', data)

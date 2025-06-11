@@ -47,10 +47,14 @@ onMounted(async () => {
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 //  Get reviews.  (?) If user logged in, only get theirs.  If not, get all.
 async function getReviews() {
-    user.value = JSON.parse(localStorage.getItem("user"));
+    //  Already retrieved the USER in onMounted().
+    //  user.value = JSON.parse(localStorage.getItem("user"));
     if (user.value !== null && user.value.id !== null) {
         //  ToDo:   Default = get all reviews, but perhaps have checkbox to get own reviews?
         //  ToDo:   await ReviewServices.getReviewsByUserId(user.value.id)
+        console.log('getReviews()');
+        console.log('user.value.id = ' + user.value.id);
+        console.log('user.value = ' + user.value);
         await ReviewServices.getReviews()
             .then((response) => {
                 reviews.value = response.data;
@@ -62,6 +66,8 @@ async function getReviews() {
                 snackbar.value.text = error.response.data.message;
             });
     } else {
+        console.log('getReviews()');
+        console.log('ELSE user.value...');
         await ReviewServices.getReviews()
             .then((response) => {
                 reviews.value = response.data;
@@ -122,14 +128,23 @@ async function addReview() {
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const handleBookSelectListClose = (returnedData) => {
-  console.log('Data from child BookSelectList dialog:', returnedData)
-  selectedBook.value = returnedData.selectedBook;
-  // Use it however needed
+    console.log('Data from child BookSelectList dialog:', returnedData)
+    console.log('returned selectedBook = ' + selectedBook);
+    console.log('returned selectedBook.value = ' + selectedBook.value);
+    selectedBook.value = returnedData.selectedBook;
+    // Use it however needed
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 //  ADD BUTTON -- open = show, close = hide
 function openAdd() {
+    //  Initialize attributes for the newReview, each time ADD.
+    newReview.value = ref({
+        rating: 0,
+        reviewText: "",
+        userId: user.value.id,
+        bwBookId: null,
+    });
     isAdd.value = true;
 }
 
@@ -169,9 +184,6 @@ function closeSnackBar() {
                 <v-card class="rounded-lg elevation-5">
                     <v-card-title class="headline mb-2">Add Review </v-card-title>
 
-                    <!-- @@@@@@@@@@@@@@@@@@@@@@@############################# -->
-                    <!-- ToDo:  Select a book for which to write a review. -->
-                    <!-- ToDo:  Pass data to this imported dialog:  the book list. -->
                     <BookSelectList
                         :bookList="bookList"
                         :selectedBook
@@ -187,14 +199,20 @@ function closeSnackBar() {
 
                     <v-card-text>
 
-                        <v-col cols="2">
-                            <v-select v-model="newReview.rating" :items="['1', '2', '3', '4', '5']" label="Rating"
-                                required></v-select>
+                        <!-- ToDo:  Change RATING selection to radio buttons with STARS and corresponding numbers -->
+                        <v-col cols="3">
+                            <v-select
+                            v-model="newReview.rating"
+                            :items="['1', '2', '3', '4', '5']"
+                            label="Rating"
+                            required></v-select>
                         </v-col>
 
                         <v-col cols="20">
                             <v-card-text class="text-h6">
-                                <span class="text-body-1">Title:</span> &nbsp; {{ selectedBook }}
+                                <span class="text-body-1">Title:</span> &nbsp;
+                                <!-- ToDo:  This is the book ID.  Need the TITLE. -->
+                                {{ selectedBook.title }}
                             </v-card-text>
                         </v-col>
 

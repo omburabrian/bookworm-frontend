@@ -18,18 +18,23 @@
                             <v-autocomplete
                                 v-model="selectedBook"
                                 :items="bookList"
+                                item-title="title"
+                                item-value="id"
+                                return-object
                                 label="Book Title" auto-select-first>
                             </v-autocomplete>
                         </v-col>
                     </v-row>
                 </v-card-text>
 
+                <!-- 
                 <v-card-text>
                     {{ customDataFromParent }}
                 </v-card-text>
                 <v-card-text>
                     {{ moreDataFromParent }}
                 </v-card-text>
+                -->
 
                 <v-divider></v-divider>
 
@@ -57,34 +62,41 @@ defineProps({
 });
 
 const bookSelectionDialog = shallowRef(false)
-const selectedBook = ref(null)
+
+//  Set default blank values for selectedBook.
+const selectedBook = ref({
+    id: null,
+    title: ""
+})
 
 function close() {
     //  Close this dialog.  It is defined as "BookSelectList" in the parent.
     //  ToDo:  How close it without referencing the parent defined name?
     //  selectedBook.value = ????????
     bookSelectionDialog.value = false;
-    console.log(selectedBook.value);    //  Currently this is just the title.
-    //  ToDo:   Need to preserve the entire book object when selecting.  Need the book ID.
-    //  console.log(selectedBook.value.title);
-    //  console.log(selectedBook.value);
-    alert('selected book = ' + selectedBook.value);
+    console.log('close() : selectedBook.value = ' + selectedBook.value);
     sendDataToParent();
 }
-
-console.log('selectedBook' + selectedBook);
-console.log('selectedBook.value' + selectedBook.value);
 
 // Define the emit event
 const emit = defineEmits(['closeWithData'])
 
 const sendDataToParent = () => {
-  const data = {
-    name: 'John Doe',
-    age: 30,
-    selectedBook: selectedBook,
-  }
-  emit('closeWithData', data)
+
+    console.log('sendDataToParent callback()');
+    console.log('selectedBookId' + selectedBook.value);
+
+    const data = {
+        //  name: 'John Doe',
+        //  age: 30,
+        selectedBookId: selectedBook.value.id,
+        selectedBookTitle: selectedBook.value.title,
+        selectedBook: selectedBook.value
+        //  ToDo:  How get object at selected INDEX, not ID?
+        //  selectedBookFromBookList: bookList[selectedBook INDEX in bookList]
+    }
+
+    emit('closeWithData', data)
 }
 
 </script>

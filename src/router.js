@@ -32,7 +32,12 @@ const router = createRouter({
     {
       path: "/books",
       name: "books",
-      component: () => import("./views/BookPage.vue"),
+      component: () => import("./views/BookView.vue"),
+    },
+    {
+      path: "/books/edit",
+      name: "bookEdit",
+      component: () => import("./views/BookEdit.vue"),
     },
     {
       path: "/userbooks",

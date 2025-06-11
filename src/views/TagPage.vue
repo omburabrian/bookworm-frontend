@@ -5,7 +5,7 @@
       v-model="selectedTagTypeId"
       :items="tagTypes"
       item-title="name"
-      item-value="id"
+      item-value="tagTypeId"
       label="Select Category"
       @update:modelValue="loadTags(selectedTagTypeId)"
       clearable
@@ -31,6 +31,25 @@
 
   <v-container>
     <div>
+        <v-dialog persistent v-model="isAddCategory" width="400">
+            <v-card class="rounded-lg elevation-3">
+                <v-card-title class="headline">Add Category</v-card-title>
+                <v-card-text>
+                <v-text-field
+                    v-model="newCategory.name"
+                    label="Category Name"
+                    required
+                ></v-text-field>
+                </v-card-text>
+                <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-btn color="grey" @click="isAddCategory = false">Cancel</v-btn>
+                <v-btn color="primary" @click="submitCategory">Save</v-btn>
+                </v-card-actions>
+            </v-card>
+    </v-dialog>
+    </div>
+    <div v-if="selectedTagTypeId">
       <v-row align="center" class="mb-4">
         <v-col cols="10">
           <v-card-title class="pl-0 text-h4 font-weight-bold"
@@ -63,14 +82,14 @@
         <v-list v-if="tags.length">
           <v-list-item
             v-for="tag in tags"
-            :key="tag.id"
+            :key="tag.tagId"
             class="mb-2"
           >
             <v-row align="center" class="w-100" dense>
               <v-col cols="12" sm="1">
                 <v-checkbox
                   v-model="selectedTags"
-                  :value="tag.id"
+                  :value="tag.tagId"
                   hide-details
                   density="compact"
                 ></v-checkbox>
@@ -87,7 +106,7 @@
                   <v-btn icon @click="editTag(tag)">
                     <v-icon>mdi-pencil</v-icon>
                   </v-btn>
-                  <v-btn icon @click="deleteTag(tag.id)">
+                  <v-btn icon @click="deleteTag(tag.tagId)">
                     <v-icon color="red">mdi-delete</v-icon>
                   </v-btn>
                 </v-list-item-action>
@@ -117,24 +136,6 @@
         </v-card>
       </v-dialog>
 
-      <v-dialog persistent v-model="isAddCategory" width="400">
-        <v-card class="rounded-lg elevation-3">
-            <v-card-title class="headline">Add Category</v-card-title>
-            <v-card-text>
-            <v-text-field
-                v-model="newCategory.name"
-                label="Category Name"
-                required
-            ></v-text-field>
-            </v-card-text>
-            <v-card-actions>
-            <v-spacer></v-spacer>
-            <v-btn color="grey" @click="isAddCategory = false">Cancel</v-btn>
-            <v-btn color="primary" @click="submitCategory">Save</v-btn>
-            </v-card-actions>
-        </v-card>
-    </v-dialog>
-
 
       <v-snackbar v-model="snackbar.value" rounded="pill">
         {{ snackbar.text }}
@@ -148,6 +149,11 @@
           </v-btn>
         </template>
       </v-snackbar>
+    </div>
+    <div v-else>
+      <v-alert type="info" class="mt-4">
+        Please select a category to view or manage tags.
+      </v-alert>
     </div>
   </v-container>
 </template>
@@ -201,8 +207,9 @@ function getAuthConfig() {
 }
 
 async function loadTags(id) {
+    
+tags.value = []
     if (!id) {
-    tags.value = [];
     return;
   }
     try {
@@ -245,6 +252,7 @@ async function submitCategory() {
     showSuccess("Category created successfully.");
     isAddCategory.value = false;
     newCategory.value = { name: "" };
+    selectedTagTypeId.value = res.data.tagTypeId;
     await loadTagTypes();
   } catch (err) {
     showError(err);
@@ -268,7 +276,7 @@ async function deleteSelectedCategory() {
 }
 
 function editTag(tag) {
-  selectedTagId.value = tag.id;
+  selectedTagId.value = tag.tagId;
   newTag.value = {
     name: tag.name,
   };
@@ -301,7 +309,7 @@ async function submitTag() {
 async function deleteTag(id) {
   try {
     await axios.delete(`${API_URL}/${id}`, getAuthConfig());
-    await loadTags( selectedTagTypeId.value);
+    await loadTags(selectedTagTypeId.value);
     showSuccess("Tag deleted.");
   } catch (err) {
     showError(err);

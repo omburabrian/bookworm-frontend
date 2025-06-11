@@ -114,7 +114,7 @@
               :items="category.tags"
               item-title="name"
               item-value="tagId"
-              :label="`Select ${category.name} Tags`"
+              :label="`Select ${category.name}`"
               multiple
               chips
               clearable

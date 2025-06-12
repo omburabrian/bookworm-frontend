@@ -13,8 +13,8 @@ export default {
   },
 
   //  Get the review with id
-  getReviewForUserBook(userId, bwBookId) {
-    return apiClient.get("reviews/users/" + userId + '/books/' + bwBookId);
+  getReviewForUserBook(userId, bookId) {
+    return apiClient.get("reviews/users/" + userId + '/books/' + bookId);
   },
 
   //  Get all reviews with user id

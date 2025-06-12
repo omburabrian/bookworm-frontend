@@ -31,7 +31,7 @@ const newReview = ref({
     rating: 0,
     reviewText: "",
     userId: null,
-    bwBookId: null,
+    bookId: null,
 });
 
 //  Quick user messages using Vuetify "snackbar"
@@ -112,17 +112,13 @@ async function addReview() {
     //  Save the current user's ID to the added review.
     newReview.value.userId = user.value.id;
 
+    /*
     console.log('addReview()');
     console.log('newReview.value.userId = ' + newReview.value.userId);
     console.log('newReview.value.bookId = ' + newReview.value.bookId);
     console.log('newReview.value.rating = ' + newReview.value.rating);
     console.log('newReview.value.reviewText = ' + newReview.value.reviewText);
-    isAdd.value = false;
-
-    return;
-
-    //  ToDo:   Ensure the book ID has been set in the newReview.value.bookId.
-    //  @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@###############################
+    //  */
 
     //  Employ the Review service to add the review.
     await ReviewServices.addReview(newReview.value)
@@ -130,7 +126,7 @@ async function addReview() {
             snackbar.value.value = true;
             snackbar.value.color = "green";
             //  ToDo:  Use the book name in this notification.  TEST
-            snackbar.value.text = `Review added successfully!  (${newReview.value.bw_book.title})`;
+            snackbar.value.text = `Review added successfully!  (${bookTitle.value})`;
         })
         .catch((error) => {
             console.log(error);
@@ -156,6 +152,7 @@ const handleBookSelectListClose = (returnedData) => {
 
     selectedBook.value.id = returnedData.selectedBook.id;
     selectedBook.value.title = returnedData.selectedBook.title;
+    //  ToDo:  Change the name of this property to simply, "bookId" in table.
     newReview.value.bookId = returnedData.selectedBook.id;
 
     //  This is the variable displayed in the dialog template.
@@ -191,7 +188,7 @@ function openAdd() {
         rating: 0,
         reviewText: "",
         userId: user.value.id,
-        bwBookId: null,
+        bookId: null,
     });
 
     isAdd.value = true;     //  Make the ADD DIALOG visible.

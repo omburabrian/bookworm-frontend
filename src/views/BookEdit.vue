@@ -4,8 +4,19 @@
       <v-row align="center" class="mb-4">
         <v-col cols="10">
           <v-card-title class="pl-0 text-h4 font-weight-bold"
-            >Books</v-card-title
+            >Book Editor
+            
+              <v-row class="mb-2">
+                <v-col cols="12" class="d-flex justify-end">
+                  <v-btn v-if="user !== null" class="mx-2" :to="{ name: 'books' }">
+                    View Book List
+                  </v-btn>
+                </v-col>
+              </v-row>
+            </v-card-title
           >
+
+
         </v-col>
 
         <v-col cols="12" md="4" class="ml-auto">

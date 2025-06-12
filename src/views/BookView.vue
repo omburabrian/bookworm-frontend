@@ -1,7 +1,22 @@
-<!-- filepath: src/views/BookViewPage.vue -->
+
 <template>
   <v-container>
-    <!-- Add these inside your <v-container> but above the book list -->
+            <v-col cols="10">
+          <v-card-title class="pl-0 text-h4 font-weight-bold"
+            >Book List
+        <v-row class="mb-2">
+          <v-col cols="12" class="d-flex justify-end">
+            <v-btn v-if="user !== null" class="mx-2" :to="{ name: 'bookEdit' }">
+                Edit Books
+              </v-btn>
+            </v-col>
+          </v-row>
+                      </v-card-title
+          >
+
+
+        </v-col>
+
 <v-row class="mb-4">
   <v-col cols="12" sm="4">
     <v-text-field v-model="search" label="Search by Title or Description" clearable />

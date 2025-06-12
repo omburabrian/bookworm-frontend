@@ -1,21 +1,19 @@
 
 <template>
   <v-container>
-            <v-col cols="10">
-          <v-card-title class="pl-0 text-h4 font-weight-bold"
-            >Book List
-        <v-row class="mb-2">
-          <v-col cols="12" class="d-flex justify-end">
-            <v-btn v-if="user !== null" class="mx-2" :to="{ name: 'bookEdit' }">
-                Edit Books
-              </v-btn>
-            </v-col>
-          </v-row>
-                      </v-card-title
-          >
-
-
-        </v-col>
+      <v-col cols="10">
+        <v-card-title class="pl-0 text-h4 font-weight-bold"
+          >Book List
+          <v-row class="mb-2">
+            <v-col cols="12" class="d-flex justify-end">
+              <v-btn v-if="user !== null" class="mx-2" :to="{ name: 'bookEdit' }">
+                  Edit Books
+                </v-btn>
+              </v-col>
+            </v-row>
+          </v-card-title
+        >
+      </v-col>
 
 <v-row class="mb-4">
   <v-col cols="12" sm="4">
@@ -54,7 +52,7 @@
 </v-row>
     <v-row>
       <v-col cols="12">
-        <v-card v-for="book in filteredBooks" :key="book.id" class="mb-3" @click="openBook(book)">
+        <v-card v-for="book in books" :key="book.id" class="mb-3" @click="openBook(book)">
           <v-card-title>{{ book.title }}</v-card-title>
           <v-card-subtitle>{{ book.authors?.map(a => a.name).join(', ') }}</v-card-subtitle>
           <v-card-text>{{ book.description }}</v-card-text>
@@ -138,18 +136,6 @@ const filteredBooks = computed(() => {
       !selectedAuthor.value ||
       (book.authors && book.authors.some(a => a.authorId === selectedAuthor.value));
 
-        // Tag filters by category
-    for (const [catId, tagIds] of Object.entries(selectedTagsByCategory.value)) {
-      if (tagIds && tagIds.length) {
-        // Check if the book has at least one of the selected tags in this category
-        const bookTags = book.tagsByCategory?.[catId] || [];
-        const bookTagIds = bookTags.map(t => t.tagId);
-        if (!tagIds.some(tagId => bookTagIds.includes(tagId))) {
-          return false; // Book does not match this tag filter
-        }
-
-      }
-    }
 
     return matchesSearch && matchesAuthor;
   });
@@ -201,5 +187,4 @@ function openBook(book) {
   showDialog.value = true;
 }
 
-onMounted(loadBooks);
 </script>

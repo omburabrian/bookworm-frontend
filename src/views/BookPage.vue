@@ -296,7 +296,7 @@ async function loadBookAuthors(id) {
     const res = await axios.get(`${API_BASE}/bookAuthors/byBook/${id}`)
     selectedAuthors.value = res.data.map(a => a.authorId) // extract just the authorIds
   } catch (err) {
-    console.error('Failed to load book authors:', err)
+    console.error('Failed to load authors:', err)
   }
 }
 

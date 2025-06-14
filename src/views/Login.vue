@@ -24,12 +24,12 @@ const rememberMe = ref(false);
 onMounted(async () => {
   localStorage.removeItem("user");
   // if (localStorage.getItem("user") !== null) {
-  //   router.push({ name: "recipes" });
+  //   router.push({ name: "books" });
   // }
 });
 
 function navigateToBooks() {
-  router.push({ name: "recipes" });
+  router.push({ name: "books" });
 }
 
 async function createAccount() {
@@ -98,7 +98,7 @@ async function login() {
       snackbar.value.value = true;
       snackbar.value.color = "green";
       snackbar.value.text = "Login successful!";
-      router.push({ name: "recipes" });
+      router.push({ name: "books" });
     } else {
       throw new Error("Invalid response from server");
     }
@@ -109,7 +109,6 @@ async function login() {
     snackbar.value.text = error.response?.data?.message || "Login failed";
   }
 }
-
 
 function openCreateAccount() {
   isCreateAccount.value = true;

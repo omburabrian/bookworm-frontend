@@ -38,7 +38,12 @@ const router = createRouter({
       path: "/userbooks",
       name: "userBooks",
       component: () => import("./views/UserBookPage.vue"),
-    }
+    },
+    {
+      path: "/tags",
+      name: "tags",
+      component: () => import("./views/TagPage.vue"),
+    },
   ],
 });
 

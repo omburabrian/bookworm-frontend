@@ -107,6 +107,19 @@
               chips
               clearable
             ></v-select>
+            <!--dynamically generate tag categories and their tags-->
+            <div v-for="category in tagCategories" :key="category.tagTypeId" class="mb-3">
+            <v-select
+              v-model="selectedTagsByCategory[category.tagTypeId]"
+              :items="category.tags"
+              item-title="name"
+              item-value="tagId"
+              :label="`Select ${category.name}`"
+              multiple
+              chips
+              clearable
+            ></v-select>
+            </div>
           </v-card-text>
           <v-card-actions>
             <v-spacer></v-spacer>
@@ -144,6 +157,12 @@ const selectedBooks = ref([]);
 const user = ref(null);
 const allAuthors = ref([])
 const selectedAuthors = ref([])
+const selectedTags = ref([])
+const tagCategories = ref([]);
+const selectedTagsByCategory = ref({}); 
+
+const bookId = ref(null)
+const API_BASE = 'http://localhost:3201/bookwormapi'
 
 const snackbar = ref({
   value: false,
@@ -164,9 +183,11 @@ const API_URL = "http://localhost:3201/bookwormapi/books";
 onMounted(async () => {
   user.value = JSON.parse(localStorage.getItem("user"));
   await loadBooks();
-  await loadAllAuthors()
+  await loadAllAuthors();
+  await loadTagCategoriesAndTags();
   if (selectedBookId.value) {
     await loadBookAuthors(selectedBookId.value)
+    await loadBookTags();
   }
 });
 
@@ -195,6 +216,10 @@ function openAdd() {
   isEditing.value = false;
   newBook.value = { title: "", description: "", isbn: "", date: ""};
   selectedAuthors.value = [];
+  selectedTagsByCategory.value = {};
+  tagCategories.value.forEach(cat => {
+    selectedTagsByCategory.value[cat.tagTypeId] = [];
+  });
 }
 
 function closeAdd() {
@@ -204,7 +229,7 @@ function closeAdd() {
   selectedAuthors.value = [];
 }
 
-function editBook(book) {
+async function editBook(book) {
   selectedBookId.value = book.id;
   newBook.value = {
     title: book.title,
@@ -212,7 +237,11 @@ function editBook(book) {
     isbn: book.isbn,
     date:  book.date,
   };
-  loadBookAuthors(selectedBookId.value);
+  await loadBookAuthors(selectedBookId.value);
+
+  await loadBookTags();
+  selectedTagsByCategory.value = groupTagsByCategory(selectedTags.value, tagCategories.value);
+
   isEditing.value = true;
   isAdd.value = true;
 }
@@ -234,6 +263,17 @@ async function submitBook() {
         authorIds: selectedAuthors.value
       },getAuthConfig());
 
+      // Update tags for the book
+      await axios.delete(`${API_BASE}/bookTags/byBook/${bookId}`, getAuthConfig());
+
+      const allSelectedTagIds = Object.values(selectedTagsByCategory.value).flat();
+      if (allSelectedTagIds.length) {
+        await axios.post(`${API_BASE}/bookTags`, {
+          bookId,
+          tagIds: allSelectedTagIds
+        }, getAuthConfig());
+      }
+
       showSuccess("Book updated successfully.");
     } else {
       const res = await axios.post(API_URL, newBook.value, getAuthConfig());
@@ -244,6 +284,15 @@ async function submitBook() {
         bookId,
         authorIds: selectedAuthors.value
       },getAuthConfig());
+
+      // Create tags for the book
+      const allSelectedTagIds = Object.values(selectedTagsByCategory.value).flat();
+      if (allSelectedTagIds.length) {
+        await axios.post(`${API_BASE}/bookTags`, {
+          bookId,
+          tagIds: allSelectedTagIds
+        }, getAuthConfig());
+      }
 
       showSuccess("Book created successfully.");
     }
@@ -279,8 +328,7 @@ async function deleteSelectedBook() {
 
 //Stuff for pulling authors
 
-const bookId = ref(null)
-const API_BASE = 'http://localhost:3201/bookwormapi'
+
 
 async function loadAllAuthors() {
   try {
@@ -294,13 +342,63 @@ async function loadAllAuthors() {
 async function loadBookAuthors(id) {
   try {
     const res = await axios.get(`${API_BASE}/bookAuthors/byBook/${id}`)
-    selectedAuthors.value = res.data.map(a => a.authorId) // extract just the authorIds
+    selectedAuthors.value = res.data.map(a => a.authorId) 
   } catch (err) {
     console.error('Failed to load book authors:', err)
   }
 }
 
+//Stuff to load tags and categories
 
+
+
+async function loadTagCategoriesAndTags() {
+  try {
+    const categoriesRes = await axios.get(`${API_BASE}/tagtypes`, getAuthConfig());
+    const categories = categoriesRes.data;
+    // For each category, fetch its tags
+    for (const cat of categories) {
+      try {
+      const tagsRes = await axios.get(`${API_BASE}/tags/byTagType/${cat.tagTypeId}`, getAuthConfig());
+      cat.tags = tagsRes.data;
+      } catch (err) {
+        console.error(`Failed to load tags for category ${cat.tagTypeId}:`, err);
+        cat.tags = []; 
+      }
+    }
+    tagCategories.value = categories;
+  } catch (err) {
+    showError(err);
+  }
+}
+
+async function loadBookTags() {
+  try {
+    const res = await axios.get(`${API_BASE}/bookTags/byBook/${selectedBookId.value}`, getAuthConfig());
+    
+    selectedTags.value = res.data.map(t => t.tagId);
+  } catch (err) {
+    console.error('Failed to load book tags:', err);
+  }
+}
+
+function groupTagsByCategory(tagIds, tagCategories) {
+  const byCategory = {};
+
+  for (const tagId of tagIds) {
+    for (const category of tagCategories) {
+      if (category.tags.some(tag => tag.tagId === tagId)) {
+        if (!byCategory[category.tagTypeId]) {
+          byCategory[category.tagTypeId] = [];
+        }
+        byCategory[category.tagTypeId].push(tagId);
+        break; // Stop after finding the category
+      }
+    }
+  }
+
+  return byCategory;
+}
 
 function showError(error) {
   snackbar.value.value = true;

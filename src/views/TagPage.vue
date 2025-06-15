@@ -124,7 +124,7 @@
           <v-card-text>
             <v-text-field
               v-model="newTag.name"
-              label="Category"
+              label="Tag Name"
               required
             ></v-text-field>
           </v-card-text>

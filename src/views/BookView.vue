@@ -65,8 +65,20 @@
             <strong>Description:</strong> {{ selectedBook.description }}
           </div>
           <div v-else><strong>Description:</strong> No Description Available</div>
-          <div v-for="(tags, cat) in selectedBook.tagsByCategory" :key="cat">
-            <strong>{{ cat }}:</strong> {{ tags.map(t => t.name).join(', ') }}
+          <div v-for="[categoryId, tags] in Object.entries(tagsByCategory)" :key="categoryId" class="mt-3">
+            <strong>
+              {{ tagCategories.find(cat => String(cat.tagTypeId) === String(categoryId))?.name }}
+            </strong>
+            <div>
+              <v-chip
+                v-for="tag in tags"
+                :key="tag.tagId"
+                class="mr-1"
+                size="small"
+              >
+                {{ tag.name }}
+              </v-chip>
+            </div>
           </div>
         </v-card-text>
         <v-card-actions>
@@ -91,11 +103,16 @@ const API_BASE = 'http://localhost:3201/bookwormapi';
 const API_URL = "http://localhost:3201/bookwormapi/books";
 const user = ref(JSON.parse(localStorage.getItem("user")) || null);
 const searchBar = ref("");
+const tagCategories = ref([]);
+const tagsByCategory = ref({});
+
 
 
 
 onMounted(async () => {
   await loadBooks();
+  await loadTagCategoriesAndTags();
+  console.log('Loaded tagCategories:', tagCategories.value);
 });
 
 
@@ -109,6 +126,7 @@ async function loadBooks() {
 }
 
 function openBook(book) {
+  tagsByCategory.value = groupTagsByCategory(book.tags, tagCategories.value);
   selectedBook.value = book;
   showDialog.value = true;
 }
@@ -123,5 +141,45 @@ const filteredBooks = computed(() => {
     return titleMatch || isbnMatch || authorMatch;
   });
 });
+
+//Stuff to load tags and categories
+
+
+
+async function loadTagCategoriesAndTags() {
+  try {
+    const categoriesRes = await axios.get(`${API_BASE}/tagtypes`);
+    const categories = categoriesRes.data;
+    // For each category, fetch its tags
+    for (const cat of categories) {
+      try {
+      const tagsRes = await axios.get(`${API_BASE}/tags/byTagType/${cat.tagTypeId}`);
+      cat.tags = tagsRes.data;
+      } catch (err) {
+        console.error(`Failed to load tags for category ${cat.tagTypeId}:`, err);
+        cat.tags = []; 
+      }
+    }
+    tagCategories.value = categories;
+  } catch (err) {
+    showError(err);
+  }
+}
+
+
+function groupTagsByCategory(tags, tagCategories) {
+  const byCategory = {};
+  if (!tags) return byCategory;
+  for (const tag of tags) {
+    const category = tagCategories.find(cat => cat.tagTypeId === tag.tagTypeId);
+    if (category) {
+      if (!byCategory[category.tagTypeId]) {
+        byCategory[category.tagTypeId] = [];
+      }
+      byCategory[category.tagTypeId].push(tag);
+    }
+  }
+  return byCategory;
+}
 
 </script>

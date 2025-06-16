@@ -267,7 +267,7 @@ async function addBookIfNotExists(bookId) {
           await axios.post(`${API_BASE}/userbooks`, { 
       userId: user.value.id,
       bookId: bookId
-    });
+    }, getAuthConfig());
     showSuccess("Book added successfully");
     loadBooks();
     return;
@@ -285,8 +285,8 @@ async function addWishlist(bookId) {
       userId: user.value.id,
       bookId: bookId,
       listType: "wishlist"
-    });
-    console.log("Book added to wishlist");
+    }, getAuthConfig());
+    showSuccess("Book added to wishlist");
     loadBooks();
     loadUserBooks();
   } catch (err) {
@@ -298,7 +298,7 @@ async function removeWishlist(bookId) {
   try {
     await axios.put(`${API_BASE}/userbooks/update/${user.value.id}/${bookId}`, { 
       listType: null
-    });
+    }, getAuthConfig());
     loadBooks();
     loadUserBooks();
     showSuccess("Book removed from wishlist");
@@ -335,7 +335,7 @@ async function addOwned(bookId) {
     await axios.put(`${API_BASE}/userbooks/update/${user.value.id}/${bookId}`, { 
       isOwned: true,
       listType: "owned"
-    });
+    }, getAuthConfig());
     loadBooks();
     loadUserBooks();
     showSuccess("Book added to owned list");
@@ -348,7 +348,7 @@ async function removeOwned(bookId) {
   try {
     await axios.put(`${API_BASE}/userbooks/update/${user.value.id}/${bookId}`,{ 
       isOwned: null
-    });
+    }, getAuthConfig());
     loadBooks();
     loadUserBooks();
     showSuccess("Book removed from owned list");
@@ -378,5 +378,16 @@ function showError(error) {
   snackbar.value.value = true;
   snackbar.value.color = "red";
   snackbar.value.text = error.response?.data?.message || "Error occurred.";
+}
+
+function getAuthConfig() {
+  const token = user.value?.token;
+  return token
+    ? {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    : {};
 }
 </script>

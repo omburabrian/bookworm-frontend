@@ -1,5 +1,5 @@
 {
-  "name": "recipe-frontend",
+  "name": "bookworm-frontend",
   "version": "0.0.0",
   "scripts": {
     "dev": "cross-env APP_ENV=development vite",
@@ -17,7 +17,7 @@
     "roboto-fontface": "*",
     "vue": "^3.2.41",
     "vue-router": "^4.1.6",
-    "vuetify": "^3.2.3",
+    "vuetify": "^3.8.9",
     "vuex": "^4.0.2",
     "webfontloader": "^1.6.28"
   },

@@ -35,12 +35,16 @@ const router = createRouter({
       component: () => import("./views/BookPage.vue"),
     },
     {
-      path: "/userbooks",
+      path: "/userBooks",
       name: "userBooks",
-      component: () => import("./views/UserBookPage.vue"),
-    }
+      component: () => import("./views/ReadingSchedule.vue"),
+    },
+    {
+      path: "/schedule",
+      name: "schedule",
+      component: () => import("./views/Schedule.vue"),
+    },
   ],
 });
-
 
 export default router;

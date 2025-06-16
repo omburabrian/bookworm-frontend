@@ -76,10 +76,22 @@
         </v-card-text>
         <v-card-actions>
           <v-spacer />
-          <v-btn color="primary" @click="showDialog = false">Close</v-btn>
+          <v-btn color="primary" @click="closeDialog">Close</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
+    <v-snackbar v-model="snackbar.value" rounded="pill">
+        {{ snackbar.text }}
+        <template v-slot:actions>
+          <v-btn
+            :color="snackbar.color"
+            variant="text"
+            @click="closeSnackBar()"
+          >
+            Close
+          </v-btn>
+        </template>
+      </v-snackbar>
   </v-container>
 </template>
 
@@ -95,9 +107,15 @@ const API_BASE = 'http://localhost:3201/bookwormapi';
 
 const API_URL = "http://localhost:3201/bookwormapi/books";
 const user = ref(JSON.parse(localStorage.getItem("user")) || null);
+console.log('User:', user.value);
 const searchBar = ref("");
 const tagCategories = ref([]);
 const tagsByCategory = ref({});
+const snackbar = ref({
+  value: false,
+  color: "",
+  text: "",
+});
 
 
 
@@ -111,8 +129,9 @@ onMounted(async () => {
 
 async function loadBooks() {
   try {
-    const res = await axios.get(`${API_BASE}/books`);
+    const res = await axios.get(`${API_BASE}/userBooks/${user.value.id}`);
     books.value = res.data;
+    console.log('Loaded books:', books.value);
   } catch (err) {
     showError(err);
   }
@@ -175,4 +194,22 @@ function groupTagsByCategory(tags, tagCategories) {
   return byCategory;
 }
 
+
+function showError(error) {
+  snackbar.value.value = true;
+  snackbar.value.color = "red";
+  snackbar.value.text = error.response?.data?.message || "Error occurred.";
+}
+
+
+function closeSnackBar() {
+  snackbar.value.value = false;
+}
+
+function closeDialog() {
+  showDialog.value = false;
+  setTimeout(() => {
+    selectedBook.value = null;
+  }, 300);
+}
 </script>

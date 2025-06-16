@@ -1,16 +1,23 @@
-import http from "../http-common";
-
-const getUserBooks = (userId) => {
-  return http.get(`/bookwormapi/userBooks/${userId}`);
-};
-
-const removeUserBook = (userId, bookId) => {
-  return http.delete(`/bookwormapi/userBooks/`, {
-    data: { userId, bookId }
-  });
-};
+import apiClient from "./services";
 
 export default {
-  getUserBooks,
-  removeUserBook
+  getBooks() {
+    return apiClient.get("books");
+  },
+
+  getBook(id) {
+    return apiClient.get("books/" + id);
+  },
+
+  addBook(book) {
+    return apiClient.post("books", book);
+  },
+
+  updateBook(book) {
+    return apiClient.put("books/" + book.id, book); 
+  },
+
+  deleteBook(id) {
+    return apiClient.delete("books/" + id);
+  }
 };

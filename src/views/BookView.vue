@@ -17,6 +17,15 @@
         <v-text-field v-model="searchBar" label="Search by Author, Title, or ISBN" clearable />
       </v-col>
     </v-row>
+    <v-row class="mb-2">
+      <v-btn-toggle v-model="activeFilter" mandatory>
+        <v-btn value="all">All</v-btn>
+        <v-btn value="owned">Owned</v-btn>
+        <v-btn value="wishlist">Wishlist</v-btn>
+        <v-btn value="reading">Reading</v-btn>
+        <v-btn value="finished">Finished</v-btn>
+      </v-btn-toggle>
+    </v-row>
     <v-row>
       <v-col cols="12">
         <v-card v-for="book in filteredBooks" :key="book.id" class="mb-3" @click="openBook(book)">
@@ -111,6 +120,7 @@
 <script setup>
 import { ref, onMounted, computed } from "vue";
 import axios from "axios";
+import { load } from "webfontloader";
 
 const books = ref([]);
 const showDialog = ref(false);
@@ -120,7 +130,6 @@ const API_BASE = 'http://localhost:3201/bookwormapi';
 
 const API_URL = "http://localhost:3201/bookwormapi/books";
 const user = ref(JSON.parse(localStorage.getItem("user")) || null);
-console.log('User:', user.value);
 const searchBar = ref("");
 const tagCategories = ref([]);
 const tagsByCategory = ref({});
@@ -131,12 +140,13 @@ const snackbar = ref({
   color: "",
   text: "",
 });
-
-
+const userBooks = ref([]); // Store user-specific books
+const activeFilter = ref('all');
 
 
 onMounted(async () => {
   await loadBooks();
+  await loadUserBooks();
   await loadTagCategoriesAndTags();
   console.log('Loaded tagCategories:', tagCategories.value);
 });
@@ -157,6 +167,17 @@ async function loadBooks() {
   }
 }
 
+async function loadUserBooks() {
+  if (!user.value) return;
+  try {
+    const res = await axios.get(`${API_BASE}/userBooks/${user.value.id}`);
+    userBooks.value = res.data;
+    console.log('Loaded userBooks:', userBooks.value);
+  } catch (err) {
+    showError(err);
+  }
+}
+
 function openBook(book) {
   tagsByCategory.value = groupTagsByCategory(book.tags, tagCategories.value);
   selectedBook.value = book;
@@ -164,9 +185,28 @@ function openBook(book) {
 }
 
 const filteredBooks = computed(() => {
-  if (!searchBar.value) return books.value;
+  let filtered;
+  // Use userBooks for all filters except 'all'
+  if (activeFilter.value === 'all') {
+    filtered = books.value;
+  } else {
+    filtered = userBooks.value;
+    console.log('Filtering userBooks:', filtered);
+    if (activeFilter.value === 'owned') {
+      filtered = filtered.filter(book => book.userBooks.isOwned === true);
+    } else if (activeFilter.value === 'wishlist') {
+      filtered = filtered.filter(book => book.userBooks.listType === "wishlist");
+    } else if (activeFilter.value === 'reading') {
+      filtered = filtered.filter(book => book.userBooks.listType === 'reading');
+    } else if (activeFilter.value === 'finished') {
+      filtered = filtered.filter(book => book.userBooks.listType === 'finished');
+    }
+    console.log('Filtered books:', filtered);
+    console.log('userBooks:', userBooks.value);
+  }
+  if (!searchBar.value) return filtered;
   const search = searchBar.value.toLowerCase();
-  return books.value.filter(book => {
+  return filtered.filter(book => {
     const titleMatch = book.title && book.title.toLowerCase().includes(search);
     const isbnMatch = book.isbn && book.isbn.toLowerCase().includes(search);
     const authorMatch = book.authors && book.authors.some(a => a.name.toLowerCase().includes(search));
@@ -248,6 +288,7 @@ async function addWishlist(bookId) {
     });
     console.log("Book added to wishlist");
     loadBooks();
+    loadUserBooks();
   } catch (err) {
     showError(err);
   }
@@ -259,6 +300,7 @@ async function removeWishlist(bookId) {
       listType: null
     });
     loadBooks();
+    loadUserBooks();
     showSuccess("Book removed from wishlist");
   } catch (err) {
     showError(err);
@@ -294,7 +336,8 @@ async function addOwned(bookId) {
       isOwned: true,
       listType: "owned"
     });
-    loadBooks(); // Refresh the book list to update owned status
+    loadBooks();
+    loadUserBooks();
     showSuccess("Book added to owned list");
   } catch (err) {
     showError(err);
@@ -306,7 +349,8 @@ async function removeOwned(bookId) {
     await axios.put(`${API_BASE}/userbooks/update/${user.value.id}/${bookId}`,{ 
       isOwned: null
     });
-    loadBooks(); // Refresh the book list to update owned status
+    loadBooks();
+    loadUserBooks();
     showSuccess("Book removed from owned list");
   } catch (err) {
     showError(err);

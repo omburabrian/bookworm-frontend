@@ -4,8 +4,19 @@
       <v-row align="center" class="mb-4">
         <v-col cols="10">
           <v-card-title class="pl-0 text-h4 font-weight-bold"
-            >Books</v-card-title
+            >Book Editor
+            
+              <v-row class="mb-2">
+                <v-col cols="12" class="d-flex justify-end">
+                  <v-btn v-if="user !== null" class="mx-2" :to="{ name: 'books' }">
+                    View Book List
+                  </v-btn>
+                </v-col>
+              </v-row>
+            </v-card-title
           >
+
+
         </v-col>
 
         <v-col cols="12" md="4" class="ml-auto">
@@ -69,7 +80,7 @@
           </v-list-item>
         </v-list>
       </div>
-      <!-- Book Form Dialog -->
+     
       <v-dialog persistent v-model="isAdd" width="600">
         <v-card class="rounded-lg elevation-3">
           <v-card-title class="headline"
@@ -98,7 +109,7 @@
                 required
             ></v-text-field>
             <v-select
-              v-model="selectedAuthors"
+              v-model="newBook.authors"
               :items="allAuthors"
               item-title="name"
               item-value="authorId"
@@ -107,6 +118,19 @@
               chips
               clearable
             ></v-select>
+            <!--dynamically generate tag categories and their tags-->
+            <div v-for="category in tagCategories" :key="category.tagTypeId" class="mb-3">
+            <v-select
+              v-model="selectedTagsByCategory[category.tagTypeId]"
+              :items="category.tags"
+              item-title="name"
+              item-value="tagId"
+              :label="`Select ${category.name}`"
+              multiple
+              chips
+              clearable
+            ></v-select>
+            </div>
           </v-card-text>
           <v-card-actions>
             <v-spacer></v-spacer>
@@ -133,7 +157,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, watch } from "vue";
 import axios from "axios";
 
 const books = ref([]);
@@ -143,7 +167,11 @@ const selectedBookId = ref(null);
 const selectedBooks = ref([]);
 const user = ref(null);
 const allAuthors = ref([])
-const selectedAuthors = ref([])
+const tagCategories = ref([]);
+const selectedTagsByCategory = ref({}); 
+
+const bookId = ref(null)
+const API_BASE = 'http://localhost:3201/bookwormapi'
 
 const snackbar = ref({
   value: false,
@@ -156,18 +184,22 @@ const newBook = ref({
   description: "",
     isbn: "",
     date: "",
-  selectedAuthors: []
+  authors: [],
+  tags: []
 });
+
+// Update newBook.tags based on selectedTagsByCategory so that tags is a flat array, while the selectedTagsByCategory is an object grouped by category
+watch(selectedTagsByCategory, (newValue) => {
+  newBook.value.tags = Object.values(newValue).flat();
+}, { deep: true });
 
 const API_URL = "http://localhost:3201/bookwormapi/books";
 
 onMounted(async () => {
   user.value = JSON.parse(localStorage.getItem("user"));
   await loadBooks();
-  await loadAllAuthors()
-  if (selectedBookId.value) {
-    await loadBookAuthors(selectedBookId.value)
-  }
+  await loadAllAuthors();
+  await loadTagCategoriesAndTags();
 });
 
 function getAuthConfig() {
@@ -193,26 +225,38 @@ async function loadBooks() {
 function openAdd() {
   isAdd.value = true;
   isEditing.value = false;
-  newBook.value = { title: "", description: "", isbn: "", date: ""};
-  selectedAuthors.value = [];
+  newBook.value = { title: "", description: "", isbn: "", date: "", authors: [], tags: [] };
+  selectedTagsByCategory.value = {};
+  tagCategories.value.forEach(cat => {
+    selectedTagsByCategory.value[cat.tagTypeId] = [];
+  });
 }
+
 
 function closeAdd() {
   isAdd.value = false;
-  newBook.value = { title: "", description: "", isbn: "", date: ""};
+  newBook.value = { title: "", description: "", isbn: "", date: "", authors: [], tags: [] };
+  selectedTagsByCategory.value = {};
+  tagCategories.value.forEach(cat => {
+    selectedTagsByCategory.value[cat.tagTypeId] = [];
+  });
   selectedBookId.value = null;
-  selectedAuthors.value = [];
 }
 
-function editBook(book) {
+async function editBook(book) {
   selectedBookId.value = book.id;
   newBook.value = {
     title: book.title,
     description: book.description,
-    isbn: book.isbn,
-    date:  book.date?.split("T")[0] || "",
+    isbn: book.isbn, 
+    date:  book.date,
+    authors: book.authors.map(author => author.authorId),
+    tags: book.tags
+    
   };
-  loadBookAuthors(selectedBookId.value);
+  let tagIds = newBook.value.tags.map(tag => tag.tagId);
+  selectedTagsByCategory.value = groupTagsByCategory(tagIds, tagCategories.value);
+
   isEditing.value = true;
   isAdd.value = true;
 }
@@ -231,8 +275,18 @@ async function submitBook() {
 
       await axios.post(`${API_BASE}/bookAuthors`, {
         bookId,
-        authorIds: selectedAuthors.value
-      });
+        authorIds: newBook.value.authors
+      },getAuthConfig());
+
+      // Update tags for the book
+      await axios.delete(`${API_BASE}/bookTags/byBook/${bookId}`, getAuthConfig());
+
+      
+      await axios.post(`${API_BASE}/bookTags`, {
+        bookId,
+        tagIds: newBook.value.tags
+      }, getAuthConfig());
+     
 
       showSuccess("Book updated successfully.");
     } else {
@@ -242,8 +296,15 @@ async function submitBook() {
       // Create authors for the book
       await axios.post(`${API_BASE}/bookAuthors`, {
         bookId,
-        authorIds: selectedAuthors.value
-      });
+        authorIds: newBook.value.authors
+      },getAuthConfig());
+
+      // Create tags for the book
+      await axios.post(`${API_BASE}/bookTags`, {
+        bookId,
+        tagIds: newBook.value.tags
+      }, getAuthConfig());
+      
 
       showSuccess("Book created successfully.");
     }
@@ -279,8 +340,7 @@ async function deleteSelectedBook() {
 
 //Stuff for pulling authors
 
-const bookId = ref(null)
-const API_BASE = 'http://localhost:3201/bookwormapi'
+
 
 async function loadAllAuthors() {
   try {
@@ -291,16 +351,48 @@ async function loadAllAuthors() {
   }
 }
 
-async function loadBookAuthors(id) {
+//Stuff to load tags and categories
+
+
+
+async function loadTagCategoriesAndTags() {
   try {
-    const res = await axios.get(`${API_BASE}/bookAuthors/byBook/${id}`)
-    selectedAuthors.value = res.data.map(a => a.authorId) // extract just the authorIds
+    const categoriesRes = await axios.get(`${API_BASE}/tagtypes`, getAuthConfig());
+    const categories = categoriesRes.data;
+    // For each category, fetch its tags
+    for (const cat of categories) {
+      try {
+      const tagsRes = await axios.get(`${API_BASE}/tags/byTagType/${cat.tagTypeId}`, getAuthConfig());
+      cat.tags = tagsRes.data;
+      } catch (err) {
+        console.error(`Failed to load tags for category ${cat.tagTypeId}:`, err);
+        cat.tags = []; 
+      }
+    }
+    tagCategories.value = categories;
   } catch (err) {
-    console.error('Failed to load book authors:', err)
+    showError(err);
   }
 }
 
 
+function groupTagsByCategory(tagIds, tagCategories) {
+  const byCategory = {};
+
+  for (const tagId of tagIds) {
+    for (const category of tagCategories) {
+      if (category.tags.some(tag => tag.tagId === tagId)) {
+        if (!byCategory[category.tagTypeId]) {
+          byCategory[category.tagTypeId] = [];
+        }
+        byCategory[category.tagTypeId].push(tagId);
+        break; // Stop after finding the category
+      }
+    }
+  }
+
+  return byCategory;
+}
 
 function showError(error) {
   snackbar.value.value = true;

@@ -17,6 +17,15 @@
         <v-text-field v-model="searchBar" label="Search by Author, Title, or ISBN" clearable />
       </v-col>
     </v-row>
+    <v-row class="mb-2">
+      <v-btn-toggle v-model="activeFilter" mandatory>
+        <v-btn value="all">All</v-btn>
+        <v-btn value="owned">Owned</v-btn>
+        <v-btn value="wishlist">Wishlist</v-btn>
+        <v-btn value="reading">Reading</v-btn>
+        <v-btn value="finished">Finished</v-btn>
+      </v-btn-toggle>
+    </v-row>
     <v-row>
       <v-col cols="12">
         <v-card v-for="book in filteredBooks" :key="book.id" class="mb-3" @click="openBook(book)">
@@ -35,11 +44,17 @@
                     </v-btn>
                   </template>
                   <v-list>
-                    <v-list-item @click="addWishlist(book.id)">
+                    <v-list-item v-if="!wishlistStatus[book.id]" @click="addWishlist(book.id)">
                       <v-list-item-title>Add to Wishlist</v-list-item-title>
                     </v-list-item>
-                    <v-list-item @click="addOwned(book.id)">
+                    <v-list-item v-else @click="removeWishlist(book.id)">
+                      <v-list-item-title>Remove from Wishlist</v-list-item-title>
+                    </v-list-item>
+                    <v-list-item v-if="!ownedStatus[book.id]" @click="addOwned(book.id)">
                       <v-list-item-title>Add to Owned</v-list-item-title>
+                    </v-list-item>
+                    <v-list-item v-else @click="removeOwned(book.id)">
+                      <v-list-item-title>Remove from Owned</v-list-item-title>
                     </v-list-item>
 
                   </v-list>
@@ -83,16 +98,29 @@
         </v-card-text>
         <v-card-actions>
           <v-spacer />
-          <v-btn color="primary" @click="showDialog = false">Close</v-btn>
+          <v-btn color="primary" @click="closeDialog">Close</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
+    <v-snackbar v-model="snackbar.value" rounded="pill">
+        {{ snackbar.text }}
+        <template v-slot:actions>
+          <v-btn
+            :color="snackbar.color"
+            variant="text"
+            @click="closeSnackBar()"
+          >
+            Close
+          </v-btn>
+        </template>
+      </v-snackbar>
   </v-container>
 </template>
 
 <script setup>
 import { ref, onMounted, computed } from "vue";
 import axios from "axios";
+import { load } from "webfontloader";
 
 const books = ref([]);
 const showDialog = ref(false);
@@ -105,12 +133,20 @@ const user = ref(JSON.parse(localStorage.getItem("user")) || null);
 const searchBar = ref("");
 const tagCategories = ref([]);
 const tagsByCategory = ref({});
-
-
+const ownedStatus = ref({});
+const wishlistStatus = ref({});
+const snackbar = ref({
+  value: false,
+  color: "",
+  text: "",
+});
+const userBooks = ref([]); // Store user-specific books
+const activeFilter = ref('all');
 
 
 onMounted(async () => {
   await loadBooks();
+  await loadUserBooks();
   await loadTagCategoriesAndTags();
   console.log('Loaded tagCategories:', tagCategories.value);
 });
@@ -119,7 +155,24 @@ onMounted(async () => {
 async function loadBooks() {
   try {
     const res = await axios.get(`${API_BASE}/books`);
+
     books.value = res.data;
+     for (const book of books.value) {
+      ownedStatus.value[book.id] = await isOwned(book.id);
+      wishlistStatus.value[book.id] = await isWishlist(book.id);
+      console.log('wishlistStatus:', wishlistStatus.value);
+    }
+  } catch (err) {
+    showError(err);
+  }
+}
+
+async function loadUserBooks() {
+  if (!user.value) return;
+  try {
+    const res = await axios.get(`${API_BASE}/userBooks/${user.value.id}`);
+    userBooks.value = res.data;
+    console.log('Loaded userBooks:', userBooks.value);
   } catch (err) {
     showError(err);
   }
@@ -132,9 +185,28 @@ function openBook(book) {
 }
 
 const filteredBooks = computed(() => {
-  if (!searchBar.value) return books.value;
+  let filtered;
+  // Use userBooks for all filters except 'all'
+  if (activeFilter.value === 'all') {
+    filtered = books.value;
+  } else {
+    filtered = userBooks.value;
+    console.log('Filtering userBooks:', filtered);
+    if (activeFilter.value === 'owned') {
+      filtered = filtered.filter(book => book.userBooks.isOwned === true);
+    } else if (activeFilter.value === 'wishlist') {
+      filtered = filtered.filter(book => book.userBooks.listType === "wishlist");
+    } else if (activeFilter.value === 'reading') {
+      filtered = filtered.filter(book => book.userBooks.listType === 'reading');
+    } else if (activeFilter.value === 'finished') {
+      filtered = filtered.filter(book => book.userBooks.listType === 'finished');
+    }
+    console.log('Filtered books:', filtered);
+    console.log('userBooks:', userBooks.value);
+  }
+  if (!searchBar.value) return filtered;
   const search = searchBar.value.toLowerCase();
-  return books.value.filter(book => {
+  return filtered.filter(book => {
     const titleMatch = book.title && book.title.toLowerCase().includes(search);
     const isbnMatch = book.isbn && book.isbn.toLowerCase().includes(search);
     const authorMatch = book.authors && book.authors.some(a => a.name.toLowerCase().includes(search));
@@ -182,4 +254,140 @@ function groupTagsByCategory(tags, tagCategories) {
   return byCategory;
 }
 
+async function addBookIfNotExists(bookId) {
+  try {
+    const response = await axios.get(`${API_BASE}/userbooks/check/${user.value.id}/${bookId}`);
+    if (response.data.exists) {
+      console.log("Book already exists in user books");
+      return;
+    }
+
+  } catch (err) {
+    if (err.response && err.response.status === 404) {
+          await axios.post(`${API_BASE}/userbooks`, { 
+      userId: user.value.id,
+      bookId: bookId
+    }, getAuthConfig());
+    showSuccess("Book added successfully");
+    loadBooks();
+    return;
+    } else {
+      console.error("Error adding book:", err);
+      showError(err);
+    }
+  }
+}
+
+async function addWishlist(bookId) {
+  try {
+    await addBookIfNotExists(bookId);
+    await axios.put(`${API_BASE}/userbooks/update/${user.value.id}/${bookId}`, { 
+      userId: user.value.id,
+      bookId: bookId,
+      listType: "wishlist"
+    }, getAuthConfig());
+    showSuccess("Book added to wishlist");
+    loadBooks();
+    loadUserBooks();
+  } catch (err) {
+    showError(err);
+  }
+}
+
+async function removeWishlist(bookId) {
+  try {
+    await axios.put(`${API_BASE}/userbooks/update/${user.value.id}/${bookId}`, { 
+      listType: null
+    }, getAuthConfig());
+    loadBooks();
+    loadUserBooks();
+    showSuccess("Book removed from wishlist");
+  } catch (err) {
+    showError(err);
+  }
+}
+
+
+async function isWishlist(bookId) {
+  try {
+    const response = await axios.get(`${API_BASE}/userbooks/check/${user.value.id}/${bookId}`);
+    return response.data.listType == "wishlist";
+  } catch (err) {
+    console.error("Error checking wishlist:", err);
+    return false;
+  }
+}
+
+async function isOwned(bookId) {
+  try {
+    const response = await axios.get(`${API_BASE}/userbooks/check/${user.value.id}/${bookId}`);
+    
+    return response.data.isOwned !== null;
+  } catch (err) {
+    console.error("Error checking owned books:", err);
+    return false;
+  }
+}
+
+async function addOwned(bookId) {
+  try {
+    await addBookIfNotExists(bookId);
+    await axios.put(`${API_BASE}/userbooks/update/${user.value.id}/${bookId}`, { 
+      isOwned: true,
+      listType: "owned"
+    }, getAuthConfig());
+    loadBooks();
+    loadUserBooks();
+    showSuccess("Book added to owned list");
+  } catch (err) {
+    showError(err);
+  }
+}
+
+async function removeOwned(bookId) {
+  try {
+    await axios.put(`${API_BASE}/userbooks/update/${user.value.id}/${bookId}`,{ 
+      isOwned: null
+    }, getAuthConfig());
+    loadBooks();
+    loadUserBooks();
+    showSuccess("Book removed from owned list");
+  } catch (err) {
+    showError(err);
+  }
+} 
+
+function showSuccess(message) {
+  snackbar.value.value = true;
+  snackbar.value.color = "green";
+  snackbar.value.text = message;
+}
+
+function closeSnackBar() {
+  snackbar.value.value = false;
+}
+
+function closeDialog() {
+  showDialog.value = false;
+  setTimeout(() => {
+    selectedBook.value = null;
+  }, 300);
+}
+
+function showError(error) {
+  snackbar.value.value = true;
+  snackbar.value.color = "red";
+  snackbar.value.text = error.response?.data?.message || "Error occurred.";
+}
+
+function getAuthConfig() {
+  const token = user.value?.token;
+  return token
+    ? {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    : {};
+}
 </script>

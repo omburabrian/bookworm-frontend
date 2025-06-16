@@ -45,9 +45,8 @@ function logout() {
         {{ title }}
       </v-toolbar-title>
       <v-spacer></v-spacer>
-      <v-btn v-if="user !== null" class="mx-2" :to="{ name: 'books' }">
-        Dashboard
-      </v-btn>
+
+
       <v-btn v-if="user !== null" class="mx-2" :to="{ name: 'authors' }">
         Authors
       </v-btn>

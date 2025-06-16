@@ -24,11 +24,6 @@ const router = createRouter({
       component: () => import("./views/BookEdit.vue"),
     },
     {
-      path: "/userbooks",
-      name: "userBooks",
-      component: () => import("./views/UserBookPage.vue"),
-    },
-    {
       path: "/tags",
       name: "tags",
       component: () => import("./views/TagPage.vue"),

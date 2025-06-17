@@ -2,6 +2,8 @@
 
 import { ref, onMounted } from 'vue'
 
+import RecommendServices from "../services/RecommendServices";
+
 //  Initialize variables
 const user = ref(null);
 
@@ -12,14 +14,30 @@ const snackbar = ref({
     text: "",
 });
 
-//  Blank Recommendation Criteria object
-const recommendCriteria = ref({
-    books: [],
-    authors: [],
-    genres: [],
+//  User input text from view
+const recommendCriteriaText = ref({
+    books: '',
+    authors: '',
+    genres: '',
 });
 
-const recommendedBooks = ref([]);
+//  User input text converted into arrays
+const recommendCriteriaLists = ref({
+    bookList: [],
+    authorList: [],
+    genreList: [],
+});
+
+//  User input arrays converted into JSON arrays
+const recommendCriteriaJson = ref({
+    bookList: '',
+    authorList: '',
+    genreList: '',
+});
+
+//  Returned JSON list from RecommendServices
+const recommendedList = ref([]);
+const recommendedListText = ref('');
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 //  Upon loading the view, load all the reviews.
@@ -36,8 +54,71 @@ onMounted(async () => {
 });
 
 function getRecommendations() {
-
+    getCriteriaLists();
+    promptForRecommendations();
+    displayRecommendations();
 }
+
+function getCriteriaLists() {
+    getBookCriteria();
+    getAuthorCriteria();
+    getGenreCriteria();
+}
+
+function getBookCriteria() {
+    recommendCriteriaLists.value.bookList
+        = recommendCriteriaText.value.books.split('\n');
+    recommendCriteriaJson.value.bookList
+        = JSON.stringify(recommendCriteriaLists.value.bookList);
+};
+
+function getAuthorCriteria() {
+    recommendCriteriaLists.value.authorList
+        = recommendCriteriaText.value.authors.split('\n');
+    recommendCriteriaJson.value.authorList
+        = JSON.stringify(recommendCriteriaLists.value.authorList);
+};
+
+function getGenreCriteria() {
+    recommendCriteriaLists.value.genreList
+        = recommendCriteriaText.value.genres.split('\n');
+    recommendCriteriaJson.value.genreList
+        = JSON.stringify(recommendCriteriaLists.value.genreList);
+};
+
+async function promptForRecommendations() {
+
+    //  Testing  @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@#########################
+    //  recommendedList.value = RecommendServices.getRecommendationTest();
+
+    // RecommendServices.getRecommendations(
+    //     recommendCriteriaJson.value
+    // );
+
+    await RecommendServices.getRecommendationTest()
+        .then((response) => {
+            recommendedList.value = response.data;
+        })
+        .catch((error) => {
+            console.log(error);
+            snackbar.value.value = true;
+            snackbar.value.color = "error";
+            snackbar.value.text = error.response.data.message;
+        });
+};
+
+function displayRecommendations() {
+
+    recommendedListText.value = recommendedList.value;
+
+    //  Todo:  Display list of cards, one for each recommendation
+    //  recommendedListText.value = '(Display the recoomendations here.)';
+
+};
+
+
+
+
 
 function closeSnackBar() {
     snackbar.value.value = false;
@@ -69,7 +150,7 @@ function closeSnackBar() {
 
                 <v-col>
                     <v-card class="rounded-lg elevation-5">
-                        <v-textarea label="Books" v-model="recommendCriteria.books">
+                        <v-textarea label="Books" v-model="recommendCriteriaText.books">
                         </v-textarea>
                     </v-card>
                 </v-col>
@@ -77,14 +158,14 @@ function closeSnackBar() {
 
                 <v-col>
                     <v-card class="rounded-lg elevation-5">
-                        <v-textarea label="Authors" v-model="recommendCriteria.authors">
+                        <v-textarea label="Authors" v-model="recommendCriteriaText.authors">
                         </v-textarea>
                     </v-card>
                 </v-col>
 
                 <v-col>
                     <v-card class="rounded-lg elevation-5">
-                        <v-textarea label="Genres" v-model="recommendCriteria.genres">
+                        <v-textarea label="Genres" v-model="recommendCriteriaText.genres">
                         </v-textarea>
                     </v-card>
                 </v-col>
@@ -92,16 +173,16 @@ function closeSnackBar() {
             </v-row>
 
             <br><br>
-            
+
             <v-row>
                 <v-col cols="10">
-                <v-card class="rounded-lg elevation-5" >
-                    <v-card-title class="headline mb-2">Recommended Books </v-card-title>
+                    <v-card class="rounded-lg elevation-5">
+                        <v-card-title class="headline mb-2">Recommended Books </v-card-title>
 
-                    <v-textarea v-model="recommendCriteria.books">
+                        <v-textarea v-model="recommendedListText">
                         </v-textarea>
 
-                </v-card>
+                    </v-card>
                 </v-col>
             </v-row>
 

@@ -1,11 +1,12 @@
 <script setup>
 
 import { ref, onMounted } from 'vue'
-
 import RecommendServices from "../services/RecommendServices";
+import BookCard from "../components/BookCardComponent.vue";
 
 //  Initialize variables
 const user = ref(null);
+const books = ref([]);
 
 //  Quick user messages using Vuetify "snackbar"
 const snackbar = ref({
@@ -97,7 +98,8 @@ async function promptForRecommendations() {
 
     await RecommendServices.getRecommendationTest()
         .then((response) => {
-            recommendedList.value = response.data;
+            //  recommendedList.value = response.data;
+            books.value = response.data;
         })
         .catch((error) => {
             console.log(error);
@@ -179,8 +181,13 @@ function closeSnackBar() {
                     <v-card class="rounded-lg elevation-5">
                         <v-card-title class="headline mb-2">Recommended Books </v-card-title>
 
+                        <!--
                         <v-textarea v-model="recommendedListText">
                         </v-textarea>
+                        -->
+                        
+                        <!-- ToDo:  What is the @deletedList clause? -->
+                        <BookCard v-for="book in books" :book="book" @deletedList="getLists()" />
 
                     </v-card>
                 </v-col>

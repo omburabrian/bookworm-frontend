@@ -19,7 +19,7 @@ const router = createRouter({
       component: () => import("./views/ReviewList.vue"),
     },
     {
-      path:"/reviews/users/:userId/books/:bwBookId",
+      path:"/reviews/users/:userId/books/:bookId",
       name: "editReview",
       component: () => import("./views/EditReview.vue"),
     },

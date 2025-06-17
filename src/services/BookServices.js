@@ -23,6 +23,6 @@ export default {
   },
 
   getAllBooks() {
-    return apiClient.get("bwbooks");
+    return apiClient.get("books");
   }
 };

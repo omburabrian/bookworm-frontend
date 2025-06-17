@@ -32,7 +32,7 @@
           <v-row align="center">
             <v-col cols="10">
               <v-card-title>{{ book.title }}</v-card-title>
-              <v-card-subtitle>{{ book.authors?.map(a => a.name).join(', ') }}</v-card-subtitle>
+              <v-card-subtitle>{{ book.authors?.map(a => a.name).join(' ; ') }}</v-card-subtitle>
               <v-card-text>{{ book.description }}</v-card-text>
             </v-col>
             <v-col cols="2" class="d-flex justify-end">
@@ -69,7 +69,7 @@
       <v-card v-if="selectedBook">
         <v-card-title>{{ selectedBook.title }}</v-card-title>
         <v-card-subtitle>
-          <div><strong>Authors:</strong> {{ selectedBook.authors?.map(a => a.name).join(', ') }}</div>
+          <div><strong>Authors:</strong> {{ selectedBook.authors?.map(a => a.name).join(' ; ') }}</div>
           <div><strong>ISBN:</strong> {{ selectedBook.isbn }}</div>
           <div v-if="selectedBook.date && selectedBook.date !== '0000-00-00'">
             <strong>Publication Date:</strong> {{ selectedBook.date }}

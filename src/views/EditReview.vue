@@ -19,9 +19,9 @@ const user = ref(null);
 review.value = {
   rating: 1,
   reviewText: '(default text for reviewText)',
-  bw_book: {
+  book: {
     title: '(default text for book title)',
-    bw_authors: [{ name: '(default text for author name)' }],
+    authors: [{ name: '(default text for author name)' }],
   },
 };
 
@@ -39,33 +39,27 @@ onMounted(async () => {
 
 async function getReview() {
   //  await ReviewServices.getReview(route.params.id)
-  //  console.log('params: userId = ' + route.params.userId + ', bwBookId = ' + route.params.bwBookId);
-  //  ToDo:  ERROR - Not getting the review from the backend:
-  await ReviewServices.getReviewForUserBook(route.params.userId, route.params.bwBookId)
+  //  console.log('params: userId = ' + route.params.userId + ', bookId = ' + route.params.bookId);
+  await ReviewServices.getReviewForUserBook(route.params.userId, route.params.bookId)
     .then((response) => {
-      console.log('Inside .then((response) => {...}');
-      console.log(response.data);
+      //  console.log(response.data);
       review.value = response.data[0];
       //  console.log(review.value);
-      //  console.log(review);
     })
     .catch((error) => {
-      console.log('DID NOT GET THE REVIEW!!!!!');
       console.log(error);
     });
-
-  //  console.log('AFTER the await ReviewServices.getReviewForUserBook()...');
 }
 
 async function updateReview() {
 
   await ReviewServices.updateReviewForUserIdBookId(
-    review.value.userId, review.value.bwBookId, review.value
+    review.value.userId, review.value.bookId, review.value
   )
     .then(() => {
       snackbar.value.value = true;
       snackbar.value.color = "green";
-      snackbar.value.text = `Review updated successfully!  (${review.value.bw_book.title})`;
+      snackbar.value.text = `Review updated successfully!  (${review.value.book.title})`;
     })
     .catch((error) => {
       console.log(error);
@@ -81,11 +75,11 @@ async function updateReview() {
 async function deleteReview() {
 
   if (isConfirmDelete()) {
-    await ReviewServices.deleteReviewForUserIdBookId(review.value.userId, review.value.bwBookId)
+    await ReviewServices.deleteReviewForUserIdBookId(review.value.userId, review.value.bookId)
       .then(() => {
         snackbar.value.value = true;
         snackbar.value.color = "green";
-        snackbar.value.text = `Book Review deleted successfully!  (${review.value.bw_book.title})`;
+        snackbar.value.text = `Book Review deleted successfully!  (${review.value.book.title})`;
       })
       .catch((error) => {
         console.log(error);
@@ -115,7 +109,7 @@ function navigateToReviewsList() {
   });
 }
 
-function closeReview() {
+function cancelEditReview() {
   //  ToDo:  Could test for UNSAVED data before closing.
   //  For now, just leave the view.
   navigateToReviewsList();
@@ -140,9 +134,9 @@ function closeReview() {
           <v-card-title class="headline">
             <v-row align="center">
               <v-col cols="10">
-                {{ review.bw_book.title }}
+                {{ review.book.title }}
                 <span style="font-weight: normal; font-size: smaller;">
-                  &nbsp; &nbsp; ~ {{ review.bw_book.bw_authors[0].name }}
+                  &nbsp; &nbsp; ~ {{review.book.authors?.map(author => author.name).join(' ; ')}}
                 </span>
               </v-col>
 
@@ -161,8 +155,14 @@ function closeReview() {
           <v-card-text>
 
             <v-row>
+              
               <v-col cols="2">
-                <v-text-field v-model.number="review.rating" label="Rating" type="number"></v-text-field>
+                <v-select
+                  v-model="review.rating"
+                  :items="['1', '2', '3', '4', '5']"
+                  label="Rating"
+                  required>
+                </v-select>
               </v-col>
 
               <v-col>
@@ -180,7 +180,7 @@ function closeReview() {
             -->
 
             <v-btn variant="flat" color="primary" @click="updateReview()">Update Review</v-btn>
-            <v-btn variant="flat" color="primary" @click="closeReview()">Close</v-btn>
+            <v-btn variant="flat" color="primary" @click="cancelEditReview()">Cancel</v-btn>
             <v-spacer></v-spacer>
           </v-card-actions>
 

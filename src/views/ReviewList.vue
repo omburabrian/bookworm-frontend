@@ -48,11 +48,6 @@ onMounted(async () => {
     await getBooks();
     //  Get user id for potential subsequent use in adding new reviews, etc.
     user.value = JSON.parse(localStorage.getItem("user"));
-
-    /*
-    console.log('onMounted() : user.value.id = ' + user.value.id);
-    console.log('onMounted() : user.value.email = ' + user.value.email);
-    //  */
 });
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -112,14 +107,6 @@ async function addReview() {
     //  Save the current user's ID to the added review.
     newReview.value.userId = user.value.id;
 
-    /*
-    console.log('addReview()');
-    console.log('newReview.value.userId = ' + newReview.value.userId);
-    console.log('newReview.value.bookId = ' + newReview.value.bookId);
-    console.log('newReview.value.rating = ' + newReview.value.rating);
-    console.log('newReview.value.reviewText = ' + newReview.value.reviewText);
-    //  */
-
     //  Employ the Review service to add the review.
     await ReviewServices.addReview(newReview.value)
         .then(() => {
@@ -144,28 +131,23 @@ async function addReview() {
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const handleBookSelectListClose = (returnedData) => {
-    console.log('handleBookSelectListClose(returnedData) = ', returnedData)
+
+    //  console.log('handleBookSelectListClose(returnedData) = ', returnedData)
     
-    //  Don't use the *value* of the actual ref() object, itself.
-    //  If change/clear it, changes in the <bookList>.
+    //  Don't use the *value* of the actual ref() object, itself
+    //      -- (returnedData is the <bookList> ref() from the parent).
+    //  Otherwise, if change/clear an element in the ref()'d <bookList>,
+    //      then it changes the actual book element in the <bookList>.
         //  selectedBook.value = returnedData.selectedBook;
 
     selectedBook.value.id = returnedData.selectedBook.id;
     selectedBook.value.title = returnedData.selectedBook.title;
-    //  ToDo:  Change the name of this property to simply, "bookId" in table.
     newReview.value.bookId = returnedData.selectedBook.id;
 
     //  This is the variable displayed in the dialog template.
     //  (Need to separate from the bound v-model, <selectedBook>.)
     //  TODO:  Somehow it is still connected to the v-model in the child dialog?
     bookTitle.value = returnedData.selectedBook.title
-
-    /*
-    console.log('selectedBook.value.id = ' + selectedBook.value.id);
-    console.log('selectedBook.value.title = ' + selectedBook.value.title);
-    console.log('bookTitle.value = ' + bookTitle.value);
-    console.log('newReview.value.bookId = ' + newReview.value.bookId);
-    //  */
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -175,12 +157,18 @@ function openAdd() {
     //  Upon every new ADD operation, initialize attributes for the
     //  <newReview> and <bookTitle>.
 
-    //  NOTE:
-    //  After returning from the BookSelectList, <selectedBook> is referencing
-    //  the actual book object in the <bookList> so modifying it will change
-    //  the entry in the list.
+    /*
+    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    NOTE:
+    After returning from the BookSelectList, <selectedBook> is referencing
+    the actual book object in the <bookList> so modifying it will change
+    the entry in the list.  <selectedBook> is an element in the ref(), bookList,
+    so any change in its atttributes will be refelcted in the original object in the list.
     //  selectedBook.value.id = null;
     //  selectedBook.value.title = "";
+    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    */
+
     bookTitle.value = "";
 
     //  This object will be used to ADD the new REVIEW.
@@ -240,7 +228,8 @@ function closeSnackBar() {
                     <!-- @@@@@@@@@@@@@@@@@@@@@@@############################# -->
 
 
-                    <!-- Change this to some type of selection, integer between 1-5 -->
+                    <!-- Limit the selection to the range [1-5] -->
+                     <!-- See ADD REVIEW . . .  -->
 
                     <v-card-text>
 

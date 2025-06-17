@@ -31,47 +31,17 @@ onMounted(async () => {
 
 });
 
-//  DON'T NEED TO GET BOOK OR AUTHOR INFO SINCE IT IS INCLUDED WITH REVIEW DATA?
-//  vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-/*
-
-async function getBook() {
-  await BookServices.getBookForId(props.review.bookId)
-    .then((response) => {
-      book.value = response.data;
-    })
-    .catch((error) => {
-      console.log(error);
-    });
-}
-
-async function getAuthor() {
-  await AuthorServices.getAuthor(props.review.authorId)
-    .then((response) => {
-      author.value = response.data;
-    })
-    .catch((error) => {
-      console.log(error);
-    });
-}
-
-//  */
-//  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-//  ToDo: What does this do?  No other references anywhere.  >>>> function navigateToEdit() {
-//  Documentation = navigates to url?  https://router.vuejs.org/guide/essentials/navigation.html
 function navigateToEdit() {
   //  "editReview" = named route in "src\router.js", associated with the EditReview.vue.
-  //  console.log(`router.push(userId=${props.review.userId}, bwBookId=${props.review.bwBookId})`);
+  //  console.log(`router.push(userId=${props.review.userId}, bookId=${props.review.bookId})`);
   router.push({
     name: "editReview",
     //  Bridge table.  Will need the 2 IDs of the joined tables.
     params: {
       userId: props.review.userId,
-      bwBookId: props.review.bwBookId,
+      bookId: props.review.bookId,
     }
   });
-  //  router.push({ name: "editRecipe", params: { id: props.review.id } });
 }
 
 function reviewTextPreview(theReviewText) {
@@ -88,7 +58,8 @@ function reviewTextPreview(theReviewText) {
 
 </script>
 
-<!-- -------------------------------------------------------- -->
+<!-- ################################################################### -->
+
 <template>
   <v-card
   class="rounded-lg elevation-5 mb-8"
@@ -106,9 +77,9 @@ function reviewTextPreview(theReviewText) {
             <v-icon start icon="mdi-star"></v-icon>  
             </span>
           </v-chip>
-          {{ review.bw_book.title }}
+          {{ review.book.title }}
           <span style="font-weight: normal; font-size: smaller;">
-          &nbsp; &nbsp; ~ {{ review.bw_book.bw_authors[0].name }}
+          &nbsp; &nbsp; ~ {{ review.book.authors?.map(author => author.name).join(' ; ') }}
           </span>
         </v-col>
 

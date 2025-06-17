@@ -159,9 +159,6 @@ function displayRecommendations() {
 };
 
 
-
-
-
 function closeSnackBar() {
     snackbar.value.value = false;
 }
@@ -199,15 +196,21 @@ function closeSnackBar() {
 
 
                 <v-col>
-                    <v-card class="rounded-lg elevation-5">
-                        <v-textarea label="Authors" v-model="recommendCriteriaText.authors">
+                    <v-card class="rounded-lg elevation-5" background-color="#BDBDBD">
+                        <v-textarea label="Authors"
+                        v-model="recommendCriteriaText.authors"
+                        background-color="#BDBDBD"
+                        readonly=true >
                         </v-textarea>
                     </v-card>
                 </v-col>
 
                 <v-col>
-                    <v-card class="rounded-lg elevation-5">
-                        <v-textarea label="Genres" v-model="recommendCriteriaText.genres">
+                    <v-card class="rounded-lg elevation-5" background-color="#BDBDBD">
+                        <v-textarea label="Genres"
+                        v-model="recommendCriteriaText.genres"
+                        background-color="#BDBDBD"
+                        readonly=true >
                         </v-textarea>
                     </v-card>
                 </v-col>

@@ -38,6 +38,16 @@ const router = createRouter({
       name: "tags",
       component: () => import("./views/TagPage.vue"),
     },
+    {
+      path: "/recommend",
+      name: "recommend",
+      component: () => import("./views/Recommend.vue"),
+    },
+    {
+      path: "/admin",
+      name: "admin",
+      component: () => import("./views/Admin.vue"),
+    },
   ],
 });
 

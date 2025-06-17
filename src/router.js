@@ -9,26 +9,35 @@ const router = createRouter({
       component: () => import("./views/Login.vue"),
     },
     {
-      path: "/recipes",
-      name: "recipes",
-      component: () => import("./views/RecipeList.vue"),
-    },
-    {
-      path: "/recipe/:id",
-      name: "editRecipe",
-      props: true,
-      component: () => import("./views/EditRecipe.vue"),
-    },
-    {
-      path: "/ingredients",
-      name: "ingredients",
-      component: () => import("./views/IngredientList.vue"),
-    },
-    {
-      path:"/authors",
+      path: "/authors",
       name: "authors",
       component: () => import("./views/AuthorPage.vue"),
-    }
+    },
+    {
+      path:"/reviews",
+      name: "reviews",
+      component: () => import("./views/ReviewList.vue"),
+    },
+    {
+      path:"/reviews/users/:userId/books/:bookId",
+      name: "editReview",
+      component: () => import("./views/EditReview.vue"),
+    },
+    {
+      path: "/books",
+      name: "books",
+      component: () => import("./views/BookView.vue"),
+    },
+    {
+      path: "/books/edit",
+      name: "bookEdit",
+      component: () => import("./views/BookEdit.vue"),
+    },
+    {
+      path: "/tags",
+      name: "tags",
+      component: () => import("./views/TagPage.vue"),
+    },
   ],
 });
 

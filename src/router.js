@@ -14,6 +14,16 @@ const router = createRouter({
       component: () => import("./views/AuthorPage.vue"),
     },
     {
+      path:"/reviews",
+      name: "reviews",
+      component: () => import("./views/ReviewList.vue"),
+    },
+    {
+      path:"/reviews/users/:userId/books/:bookId",
+      name: "editReview",
+      component: () => import("./views/EditReview.vue"),
+    },
+    {
       path: "/books",
       name: "books",
       component: () => import("./views/BookView.vue"),

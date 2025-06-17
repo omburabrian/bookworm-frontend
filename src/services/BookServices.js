@@ -20,5 +20,9 @@ export default {
 
   deleteBook(id) {
     return apiClient.delete("books/" + id);
+  },
+
+  getAllBooks() {
+    return apiClient.get("books");
   }
 };

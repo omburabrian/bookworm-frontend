@@ -38,12 +38,19 @@ const mockBookList = [
 
 export default {
 
-  getRecommendationTest() {
-    return apiClient.get("recommend/testget");
-  },
+    getRecommendationTest() {
+        return apiClient.get("recommend/testget");
+    },
 
-  getRecommendations(criteriaListsJson) {
-    return apiClient.post("recommend/ask", criteriaListsJson);
-  },
+    getRecommendations(criteriaListsJson) {
+        return apiClient.post("recommend/ask", criteriaListsJson);
+    },
+
+    getRecommendationsFromBookTitles(criteriaListsJson) {
+        return apiClient.post(
+            "recommend/from/titles",
+            criteriaListsJson
+        );
+    },
 
 };

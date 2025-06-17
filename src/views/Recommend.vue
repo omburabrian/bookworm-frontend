@@ -56,17 +56,23 @@ onMounted(async () => {
 
 function getRecommendations() {
     getCriteriaLists();
-    promptForRecommendations();
+
+    //  Successful test:
+    //  promptForRecommendations();
+
+    //  Now try this one:
+    promptForRecommendationsFromTitles();
+
     displayRecommendations();
 }
 
 function getCriteriaLists() {
-    getBookCriteria();
+    setBookCriteria();
     getAuthorCriteria();
     getGenreCriteria();
 }
 
-function getBookCriteria() {
+function setBookCriteria() {
     recommendCriteriaLists.value.bookList
         = recommendCriteriaText.value.books.split('\n');
     recommendCriteriaJson.value.bookList
@@ -96,6 +102,8 @@ async function promptForRecommendations() {
     //     recommendCriteriaJson.value
     // );
 
+    //  Successful!
+
     await RecommendServices.getRecommendationTest()
         .then((response) => {
             //  recommendedList.value = response.data;
@@ -108,6 +116,38 @@ async function promptForRecommendations() {
             snackbar.value.text = error.response.data.message;
         });
 };
+
+
+async function promptForRecommendationsFromTitles() {
+
+    //  Testing  @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@#########################
+    //  recommendedList.value = RecommendServices.getRecommendationTest();
+
+    // RecommendServices.getRecommendations(
+    //     recommendCriteriaJson.value
+    // );
+
+    //  Successful!
+
+    //  The JSON book list will have been set prior to entering this function.
+    //  >>>   recommendCriteriaJson.value.bookList
+
+    await RecommendServices.getRecommendationsFromBookTitles(
+        //  recommendCriteriaJson.value.bookList
+        recommendCriteriaJson.value
+    )
+        .then((response) => {
+            //  recommendedList.value = response.data;
+            books.value = response.data;
+        })
+        .catch((error) => {
+            console.log(error);
+            snackbar.value.value = true;
+            snackbar.value.color = "error";
+            snackbar.value.text = error.response.data.message;
+        });
+};
+
 
 function displayRecommendations() {
 

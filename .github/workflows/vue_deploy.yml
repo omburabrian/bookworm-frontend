@@ -12,22 +12,19 @@ jobs:
     runs-on: ubuntu-latest
     #For google auth
 
+
     steps:
-      - uses: actions/checkout@v2
-        # may need to change to version 3
+      - uses: actions/checkout@v4
         with:
           ref: dev
-      - uses: actions/setup-node@v3
-        #May need to change to version 18
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
         with:
-          node-version: 16
+          node-version: '20'
+      - run: npm ci
+      - run: npm run build
 
-      - name: Clean install dependencies
-        run: |
-          rm -rf node_modules package-lock.json
-          npm install
-          npm run build
-
+      
       - name: Deploy to Server
         uses: easingthemes/ssh-deploy@v2.1.1
         env:
